@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
+
 # Do not set TMPDIR to any tmpfs mount, these files should remain after boot.
 TMPDIR=/root/tmp
 DEBUG=""
