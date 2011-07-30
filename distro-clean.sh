@@ -67,6 +67,10 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
 
 # Locate installed desktops
 yum grouplist -v \
+  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;s/^/remove @/' \
+  |grep desktop >> $YSHELL
+
+yum grouplist -v \
   |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;s/^/install @/' \
   |grep desktop >> $YSHELL
 
