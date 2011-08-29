@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
@@ -89,6 +89,7 @@ install @input-methods
 install @printing
 install fpaste
 install memtest86+
+install policycoreutils
 install redhat-lsb
 install rpmconf
 distribution-synchronization
@@ -101,7 +102,7 @@ echo "Removing dependency leaves and installing default package sets"
 [ -n "$DEBUG" ] && read
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
-yum shell $YSHELL
+yum shell $YSHELL --disableplugin=presto
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
 # Remove duplicate packages if any found
