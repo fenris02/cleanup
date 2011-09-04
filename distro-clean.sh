@@ -31,7 +31,7 @@ read
 # Log all output to a file
 LOGFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.log)
 [[ -t 1 ]] && echo "Writing to logfile '$LOG'."
-exec > $LOG 2>&1
+exec > $LOGFILE 2>&1
 exec < /dev/null 2<&1
 
 DS=$(date +%Y%d%m)
