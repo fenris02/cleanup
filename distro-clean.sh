@@ -145,14 +145,14 @@ echo "Build problem report"
 
 # Generate reports
 rpm -Va > ${TMPDIR}/RPM-VA.txt 2>&1
-egrep -v '^.{9}  c /' ${TMPDIR}/rpm-Va.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
-egrep '^.{9}  c /' ${TMPDIR}/rpm-Va.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
+egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+egrep '^.{9}  c /' ${TMPDIR}/RPM-VA.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Need a better way to fix caps
 echo "Reset file capabilities"
 [ -n "$DEBUG" ] && read
-egrep '^.{8}P ' ${TMPDIR}/rpm-Va.txt \
+egrep '^.{8}P ' ${TMPDIR}/RPM-VA.txt \
   |awk '{print$NF}' \
   |xargs rpm --filecaps -qf \
   |grep '= cap' \
