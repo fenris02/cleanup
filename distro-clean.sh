@@ -144,9 +144,9 @@ echo "Build problem report"
 /sbin/ldconfig
 
 # Generate reports
-rpm -Va > ${TMPDIR}/RPM-VA.txt 2>&1
-egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
-egrep '^.{9}  c /' ${TMPDIR}/RPM-VA.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
+rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
+egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Need a better way to fix caps
@@ -184,5 +184,11 @@ chmod 0700 ${TMPDIR}/raising-elephants.sh
 
 # Done
 echo "Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh"
+
+echo -n "If you have questions, share this link."
+fpaste ${TMPDIR}/{YUM-SHELL,DUPLICATE-PACKAGES,RPM-VA,URGENT-REVIEW,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,FCAPS-REINSTALL}_${DS}.txt
+echo ""
+
+echo "Detailed log can be found in $LOGFILE"
 
 #EOF
