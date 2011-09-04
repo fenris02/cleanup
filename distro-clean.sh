@@ -28,6 +28,12 @@ read
 #
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
+# Log all output to a file
+LOGFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.log)
+[[ -t 1 ]] && echo "Writing to logfile '$LOG'."
+exec > $LOG 2>&1
+exec < /dev/null 2<&1
+
 DS=$(date +%Y%d%m)
 YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
 
@@ -55,7 +61,7 @@ echo "Repairing permissions"
 [ -n "$DEBUG" ] && read
 rpm -a --setugids; rpm -a --setperms
 
-yum install yum-utils
+[ -x /usr/bin/package-cleanup ] || yum install yum-utils
 
 # Locate installed leaves packages that were installed as a dep of some other package
 repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
@@ -121,6 +127,7 @@ getent passwd \
 #
 echo "Correct labels"
 [ -n "$DEBUG" ] && read
+[ -x /sbin/fixfiles ] || yum install policycoreutils
 fixfiles -R -a restore
 
 # Merge *.rpmnew files semi-automatically
@@ -137,7 +144,7 @@ echo "Build problem report"
 /sbin/ldconfig
 
 # Generate reports
-rpm -Va > ${TMPDIR}/rpm-Va.txt 2>&1
+rpm -Va > ${TMPDIR}/RPM-VA.txt 2>&1
 egrep -v '^.{9}  c /' ${TMPDIR}/rpm-Va.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 egrep '^.{9}  c /' ${TMPDIR}/rpm-Va.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
