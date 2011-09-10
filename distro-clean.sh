@@ -30,12 +30,12 @@ read
 
 # Log all output to a file
 PIPEFILE=$(mktemp -u ${TMPDIR}/${0##*/}-XXXXX.pipe)
-mkfifo $PIPEFILE
+mkfifo --context user_tmp_t $PIPEFILE
 LOGFILE=$(mktemp ${TMPDIR}/${0##*/}-XXXXX.log)
 tee -a $LOGFILE < $PIPEFILE &
 TEEPID=$!
 
-[[ -t 1 ]] && echo "Writing to logfile '$LOG'."
+[[ -t 1 ]] && echo "Writing to logfile '$LOGFILE'."
 exec > $PIPEFILE 2>&1
 #exec < /dev/null 2<&1
 
