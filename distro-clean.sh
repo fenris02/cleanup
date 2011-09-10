@@ -29,9 +29,9 @@ read
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 # Log all output to a file
-PIPEFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.pipe)
+PIPEFILE=$(mktemp ${TMPDIR}/${0##*/}-XXXXX.pipe)
 mkfifo $PIPEFILE
-LOGFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.log)
+LOGFILE=$(mktemp ${TMPDIR}/${0##*/}-XXXXX.log)
 tee $LOGFILE < $PIPEFILE &
 TEEPID=$!
 
