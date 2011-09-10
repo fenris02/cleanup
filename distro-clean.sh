@@ -32,7 +32,7 @@ read
 LOGFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.log)
 [[ -t 1 ]] && echo "Writing to logfile '$LOG'."
 exec > $LOGFILE 2>&1
-exec < /dev/null 2<&1
+#exec < /dev/null 2<&1
 
 DS=$(date +%Y%d%m)
 YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
