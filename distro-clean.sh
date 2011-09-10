@@ -29,9 +29,14 @@ read
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 # Log all output to a file
+PIPEFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.pipe)
+mkfifo $PIPEFILE
 LOGFILE=$(mktemp /root/tmp/${0##*/}-XXXXX.log)
+tee $LOGFILE < $PIPEFILE &
+TEEPID=$!
+
 [[ -t 1 ]] && echo "Writing to logfile '$LOG'."
-exec > $LOGFILE 2>&1
+exec > $PIPEFILE 2>&1
 #exec < /dev/null 2<&1
 
 DS=$(date +%Y%d%m)
@@ -163,6 +168,10 @@ egrep '^.{8}P ' ${TMPDIR}/RPM-VA.txt \
 sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt
 #yum reinstall $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
  
+# Stop logging.  No changes below this point.
+exec 1>&- 2>&-
+wait $TEEPID
+
 # Reboot script that works even when init has changed
 cat -> ${TMPDIR}/raising-elephants.sh <<EOT
 #/bin/bash
