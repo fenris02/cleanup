@@ -6,6 +6,9 @@
 TMPDIR=/root/tmp
 DEBUG=""
 
+DS=$(date +%Y%d%m)
+LANG=C
+
 if [ "$(whoami)" != "root" ]; then
   echo "Must be run as root"
   exit 1
@@ -39,9 +42,6 @@ TEEPID=$!
 exec > $PIPEFILE 2>&1
 #exec < /dev/null 2<&1
 
-DS=$(date +%Y%d%m)
-YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
-
 setenforce 0
 
 #
@@ -68,6 +68,8 @@ rpm -a --setugids; rpm -a --setperms
 
 [ -x /usr/bin/package-cleanup ] || yum install yum-utils
 
+YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
+
 # Locate installed leaves packages that were installed as a dep of some other package
 repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
   `package-cleanup --leaves -q --all` \
@@ -78,12 +80,12 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
 
 # Locate installed desktops
 yum grouplist -v \
-  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;s/^/remove @/' \
-  |grep desktop >> $YSHELL
-
-yum grouplist -v \
-  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;s/^/install @/' \
-  |grep desktop >> $YSHELL
+  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;' \
+  |grep desktop \
+  |while read GROUP; do
+    echo "remove @${GROUP}" >> $YSHELL
+    echo "install @${GROUP}" >> $YSHELL
+  done
 
 # Add default package sets
 cat ->> $YSHELL <<EOT
