@@ -5,18 +5,25 @@
 # Do not set TMPDIR to any tmpfs mount, these files should remain after boot.
 TMPDIR=/root/tmp
 DEBUG=""
+LOG_ALL="1"
 
-DS=$(date +%Y%d%m)
 LANG=C
+DS=$(date +%Y%d%m)
 
 if [ "$(whoami)" != "root" ]; then
-  echo "Must be run as root"
+  echo "Must be run as root."
   exit 1
 fi
 
+ping -c3 -q 8.8.8.8 > /dev/null
+if [ $? -eq 1 ]; then
+  echo "Please ensure you have network connectivity."
+  exit 2
+fi
+
 if [ $(runlevel |awk '{print$NF}') != "3" ]; then
-  echo "Must be run from runlevel 3"
-  exit 1
+  echo "Must be run from runlevel 3."
+  exit 3
 fi
  
 cat -<<EOT
@@ -32,20 +39,25 @@ read
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 # Log all output to a file
-PIPEFILE=$(mktemp -u ${TMPDIR}/${0##*/}-XXXXX.pipe)
-mkfifo --context user_tmp_t $PIPEFILE
-LOGFILE=$(mktemp ${TMPDIR}/${0##*/}-XXXXX.log)
-tee -a $LOGFILE < $PIPEFILE &
-TEEPID=$!
+if [ -n "$LOG_ALL" ]; then
+  PIPEFILE=$(mktemp -u ${TMPDIR}/${0##*/}-XXXXX.pipe)
+  mkfifo --context user_tmp_t $PIPEFILE
+  LOGFILE=$(mktemp ${TMPDIR}/${0##*/}-XXXXX.log)
+  tee -a $LOGFILE < $PIPEFILE &
+  TEEPID=$!
 
-[[ -t 1 ]] && echo "Writing to logfile '$LOGFILE'."
-exec > $PIPEFILE 2>&1
-#exec < /dev/null 2<&1
+  [[ -t 1 ]] && echo "Writing to logfile '$LOGFILE'."
+  exec > $PIPEFILE 2>&1
+  #exec < /dev/null 2<&1
+fi
 
+echo "Set selinux to permissive mode"
+[ -n "$DEBUG" ] && read
 setenforce 0
 
 #
 echo "Cleaning up yumdb"
+[ -n "$DEBUG" ] && read
 rm /var/lib/rpm/__db.00?
 yum clean all
 yum-complete-transaction
@@ -150,12 +162,6 @@ echo "Build problem report"
 #
 /sbin/ldconfig
 
-# Generate reports
-rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
-egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
-egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
-find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
-
 # Need a better way to fix caps
 echo "Reset file capabilities"
 [ -n "$DEBUG" ] && read
@@ -169,10 +175,19 @@ egrep '^.{8}P ' ${TMPDIR}/RPM-VA.txt \
   done
 sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt
 #yum reinstall $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
- 
+
+echo "Generate reports"
+[ -n "$DEBUG" ] && read
+rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
+egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
+find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
+
 # Stop logging.  No changes below this point.
-exec 1>&- 2>&-
-wait $TEEPID
+if [ -n "$LOG_ALL" ]; then
+  exec 1>&- 2>&-
+  wait $TEEPID
+fi
 
 # Reboot script that works even when init has changed
 cat -> ${TMPDIR}/raising-elephants.sh <<EOT
@@ -200,6 +215,8 @@ echo -n "If you have questions, share this link."
 fpaste ${TMPDIR}/{YUM-SHELL,DUPLICATE-PACKAGES,RPM-VA,URGENT-REVIEW,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,FCAPS-REINSTALL}_${DS}.txt
 echo ""
 
-echo "Detailed log can be found in $LOGFILE"
+if [ -n "$LOG_ALL" ]; then
+  echo "Detailed log can be found in $LOGFILE"
+fi
 
 #EOF
