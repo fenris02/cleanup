@@ -38,7 +38,7 @@ read
 #
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
-# Log all output to a file
+# Log all output to a file if LOG_ALL is set
 if [ -n "$LOG_ALL" ]; then
   PIPEFILE=$(mktemp -u ${TMPDIR}/${0##*/}-XXXXX.pipe)
   mkfifo --context user_tmp_t $PIPEFILE
@@ -51,6 +51,7 @@ if [ -n "$LOG_ALL" ]; then
   #exec < /dev/null 2<&1
 fi
 
+#
 echo "Set selinux to permissive mode"
 [ -n "$DEBUG" ] && read
 setenforce 0
@@ -130,7 +131,9 @@ mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 yum shell $YSHELL --disableplugin=presto
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
-# Remove duplicate packages if any found
+#
+echo "Remove duplicate packages if any found."
+[ -n "$DEBUG" ] && read
 package-cleanup --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 package-cleanup --cleandupes
 
@@ -144,16 +147,18 @@ getent passwd \
   done
 
 #
-echo "Correct labels"
+echo "Correct labels."
 [ -n "$DEBUG" ] && read
 [ -x /sbin/fixfiles ] || yum install policycoreutils
 fixfiles -R -a restore
 
-# Merge *.rpmnew files semi-automatically
+#
+echo "Merge *.rpmnew files semi-automatically."
+[ -n "$DEBUG" ] && read
 rpmconf -a
 
 #
-echo "Build problem report"
+echo "Build problem report."
 [ -n "$DEBUG" ] && read
 [ -f /etc/sysconfig/prelink ] \
   && . /etc/sysconfig/prelink \
@@ -176,6 +181,7 @@ egrep '^.{8}P ' ${TMPDIR}/RPM-VA.txt \
 sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt
 #yum reinstall $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
 
+#
 echo "Generate reports"
 [ -n "$DEBUG" ] && read
 rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
@@ -212,7 +218,7 @@ chmod 0700 ${TMPDIR}/raising-elephants.sh
 echo "Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh"
 
 echo -n "If you have questions, share this link."
-fpaste ${TMPDIR}/{YUM-SHELL,DUPLICATE-PACKAGES,RPM-VA,URGENT-REVIEW,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,FCAPS-REINSTALL}_${DS}.txt
+fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
 echo ""
 
 if [ -n "$LOG_ALL" ]; then
