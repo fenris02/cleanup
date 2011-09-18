@@ -30,8 +30,11 @@ fi
 cat -<<EOT
 Press ^C now if you do not have a good backup of your system.
 
-If you press enter, this script will try to auto-clean your system.
-Once complete, you will need to reboot.
+Please make sure you are not running on battery power.  This cleanup may take
+30mins of heavy I/O and this may cause problems if you lose power.
+
+If you press enter, this script will try to auto-clean your system.  Once
+complete, you will need to reboot.
 
 EOT
 read
@@ -218,8 +221,9 @@ sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.t
 #
 [ -n "$VERBOSE" ] && echo 'Generate reports'
 [ -n "$DEBUG" ] && read
-egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
-egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
+time rpm -Va > ${TMPDIR}/RPM-VA2_${DS}.txt 2>&1
+egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Stop logging.  No changes below this point.
@@ -255,7 +259,7 @@ chmod 0700 ${TMPDIR}/raising-elephants.sh
 
 echo 'If you have questions, share this link.'
 [ -x /usr/bin/fpaste ] || yum install -y fpaste
-fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
+fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA2,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
 echo ''
 
 if [ -n "$LOG_ALL" ]; then

@@ -6,3 +6,17 @@ Read-Write:  git://fedorapeople.org/~fenris02/cleanup.git
 Read-Only:   http://fenris02.fedorapeople.org/git/cleanup.git/
 Last resort: ssh://fedorapeople.org/~fenris02/public_git/cleanup.git
 
+
+QUICKSTART (if you already have current backups):
+
+su -
+telinit 3
+curl -s 'http://fedorapeople.org/gitweb?p=fenris02/public_git/cleanup.git;a=blob_plain;f=distro-clean.sh;hb=HEAD' > /root/distro-clean.sh
+chmod 0700 /root/distro-clean.sh
+
+# Double check your backups exits and are current.
+./distro-clean.sh
+
+# Inspect the system, review transaction log, ...
+/root/tmp/raising-elephants.sh
+
