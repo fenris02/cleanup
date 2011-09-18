@@ -77,9 +77,9 @@ done
 #
 echo "Repairing permissions"
 [ -n "$DEBUG" ] && read
-echo "This may take a minute or two, resetting user/group ownership"
+echo "This may take a few minutes, resetting user/group ownership"
 time rpm -a --setugids > /dev/null 2>&1
-echo "This may take a minute or two, resetting permissions"
+echo "This may take a few minutes, resetting permissions"
 time rpm -a --setperms > /dev/null 2>&1
 
 [ -x /usr/bin/package-cleanup ] || yum install -y yum-utils
@@ -115,6 +115,17 @@ package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 cat ->> $YSHELL <<EOT
 reinstall policycoreutils*
 reinstall selinux*
+install fpaste
+install policycoreutils
+install redhat-lsb
+install rpmconf
+EOT
+
+echo run >> $YSHELL
+
+# Break out non-essential groups so that yum succeeds even on rawhide
+YSHELL2=${TMPDIR}/YUM-SHELL2_${DS}.txt
+cat ->> $YSHELL2 <<EOT
 install @admin-tools
 install @base
 install @base-x
@@ -124,15 +135,10 @@ install @fonts
 install @hardware-support
 install @input-methods
 install @printing
-install fpaste
 install memtest86+
-install policycoreutils
-install redhat-lsb
-install rpmconf
-distribution-synchronization
 EOT
 
-echo run >> $YSHELL
+echo run >> $YSHELL2
 
 #
 echo "Removing dependency leaves and installing default package sets"
@@ -140,6 +146,8 @@ echo "Removing dependency leaves and installing default package sets"
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 yum shell $YSHELL -y --disableplugin=presto --skip-broken
+yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
+yum -y distribution-synchronization --disableplugin=presto --skip-broken
 
 # Something went around above if this directory does not exist
 echo "Resetting local selinux policy"
@@ -240,6 +248,7 @@ chmod 0700 ${TMPDIR}/raising-elephants.sh
 echo "Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh"
 
 echo -n "If you have questions, share this link."
+[ -x /usr/bin/fpaste ] || yum install -y fpaste
 fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
 echo ""
 
