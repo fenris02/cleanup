@@ -1,6 +1,6 @@
 #
 # README for dist-cleaup.sh
-# $Id:$
+# $Id$
 #
 
 Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
