@@ -126,6 +126,7 @@ install fpaste
 install policycoreutils
 install redhat-lsb
 install rpmconf
+install yum-plugin-local
 EOT
 
 echo 'run' >> $YSHELL
@@ -173,7 +174,7 @@ package-cleanup --cleandupes
 getent passwd \
   |while IFS=: read userName passWord userID groupID geCos homeDir userShell; do
     [ -d "${homeDir}/.config" ] \
-      && echo mv "${homeDir}/.config" "${homeDir}/.config.${DS}"
+      && mv "${homeDir}/.config" "${homeDir}/.config.${DS}"
   done
 
 #
