@@ -77,7 +77,10 @@ done
 #
 echo "Repairing permissions"
 [ -n "$DEBUG" ] && read
-rpm -a --setugids; rpm -a --setperms
+echo "This may take a minute or two, resetting user/group ownership"
+time rpm -a --setugids > /dev/null 2>&1
+echo "This may take a minute or two, resetting permissions"
+time rpm -a --setperms > /dev/null 2>&1
 
 [ -x /usr/bin/package-cleanup ] || yum install yum-utils
 
@@ -162,11 +165,12 @@ getent passwd \
 echo "Correct labels."
 [ -n "$DEBUG" ] && read
 [ -x /sbin/fixfiles ] || yum install policycoreutils
-fixfiles -R -a restore
+time fixfiles -R -a restore
 
 #
 echo "Merge *.rpmnew files semi-automatically."
 [ -n "$DEBUG" ] && read
+[ -x /usr/sbin/rpmconf ] || yum install rpmconf
 rpmconf -a
 
 #
@@ -177,11 +181,16 @@ echo "Build problem report."
   && /usr/sbin/prelink -av $PRELINK_OPTS >> /var/log/prelink/prelink.log 2>&1
 
 #
+echo "configure dynamic linker run-time bindings"
 /sbin/ldconfig
+
+#
+echo "Verify all installed packages"
+[ -n "$DEBUG" ] && read
+time rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
 
 # Need a better way to fix caps
 echo "Reset file capabilities"
-rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
 [ -n "$DEBUG" ] && read
 egrep '^.{8}P ' ${TMPDIR}/RPM-VA_${DS}.txt \
   |awk '{print$NF}' \
@@ -203,8 +212,9 @@ find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Stop logging.  No changes below this point.
 if [ -n "$LOG_ALL" ]; then
+  echo "Kill off logger"
   #exec 1>&- 2>&-
-  wait $TEEPID
+  #wait $TEEPID
 fi
 
 # Reboot script that works even when init has changed
