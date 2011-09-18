@@ -92,6 +92,8 @@ time rpm -a --setperms > /dev/null 2>&1
 [ -x /usr/bin/package-cleanup ] || yum install -y yum-utils
 
 YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
+YSHELL2=${TMPDIR}/YUM-SHELL2_${DS}.txt
+YSHELL3=${TMPDIR}/YUM-SHELL3_${DS}.txt
 
 # Locate installed leaves packages that were installed as a dep of some other package
 repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
@@ -101,13 +103,13 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
     echo remove $n
   done > $YSHELL
 
-# Locate installed desktops
+# Locate installed desktops -- Hack around broken depsolver
 yum grouplist -v \
   |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;' \
   |grep desktop \
   |while read GROUP; do
-    echo "remove @${GROUP}" >> $YSHELL
-    echo "install @${GROUP}" >> $YSHELL
+    echo "remove @${GROUP}" >> $YSHELL3
+    echo "install @${GROUP}" >> $YSHELL3
   done
 
 # reinstall duplicate packages, migtht clean them without breaking
@@ -132,7 +134,6 @@ EOT
 echo 'run' >> $YSHELL
 
 # Break out non-essential groups so that yum succeeds even on rawhide
-YSHELL2=${TMPDIR}/YUM-SHELL2_${DS}.txt
 cat ->> $YSHELL2 <<EOT
 install @admin-tools
 install @base
@@ -156,6 +157,7 @@ mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
 time yum shell $YSHELL -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
+time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
 time yum distribution-synchronization -y --disableplugin=presto --skip-broken
 
 [ -f /etc/PackageKit/CommandNotFound.conf ] \
