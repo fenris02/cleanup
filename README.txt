@@ -24,7 +24,7 @@ curl -s 'http://fedorapeople.org/gitweb?p=fenris02/public_git/cleanup.git;a=blob
 chmod 0700 /root/distro-clean.sh
 
 # Double check your backups exits and are current.
-./distro-clean.sh
+time ./distro-clean.sh
 
 # Inspect the system, review transaction log, ...
 /root/tmp/raising-elephants.sh

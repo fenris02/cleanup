@@ -103,15 +103,6 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
     echo remove $n
   done > $YSHELL
 
-# Locate installed desktops -- Hack around broken depsolver
-yum grouplist -v \
-  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;' \
-  |grep desktop \
-  |while read GROUP; do
-    echo "remove @${GROUP}" >> $YSHELL3
-    echo "install @${GROUP}" >> $YSHELL3
-  done
-
 # reinstall duplicate packages, migtht clean them without breaking
 package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 [ -s ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt ] && \
@@ -131,8 +122,6 @@ install rpmconf
 install yum-plugin-local
 EOT
 
-echo 'run' >> $YSHELL
-
 # Break out non-essential groups so that yum succeeds even on rawhide
 cat ->> $YSHELL2 <<EOT
 install @admin-tools
@@ -147,7 +136,20 @@ install @printing
 install memtest86+
 EOT
 
+# Locate installed desktops -- Hack around broken depsolver
+yum grouplist -v \
+  |sed '1,/^Installed/d;/^Available/,$d;s/[^()]*//;s/(//;s/)//;' \
+  |grep desktop \
+  |while read GROUP; do
+    echo "remove @${GROUP}" >> $YSHELL3
+    echo "install @${GROUP}" >> $YSHELL3
+  done
+
+echo 'distribution-synchronization' >> $YSHELL3
+
+echo 'run' >> $YSHELL
 echo 'run' >> $YSHELL2
+echo 'run' >> $YSHELL3
 
 #
 [ -n "$VERBOSE" ] && echo 'Removing dependency leaves and installing default package sets'
