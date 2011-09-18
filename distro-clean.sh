@@ -82,7 +82,7 @@ time rpm -a --setugids > /dev/null 2>&1
 echo "This may take a minute or two, resetting permissions"
 time rpm -a --setperms > /dev/null 2>&1
 
-[ -x /usr/bin/package-cleanup ] || yum install yum-utils
+[ -x /usr/bin/package-cleanup ] || yum install -y yum-utils
 
 YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
 
@@ -139,12 +139,12 @@ echo "Removing dependency leaves and installing default package sets"
 [ -n "$DEBUG" ] && read
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
-yum shell $YSHELL --disableplugin=presto --skip-broken
+yum shell $YSHELL -y --disableplugin=presto --skip-broken
 
 # Something went around above if this directory does not exist
 echo "Resetting local selinux policy"
 [ -n "$DEBUG" ] && read
-[ -d /etc/selinux/targeted ] || yum reinstall selinux-policy-targeted
+[ -d /etc/selinux/targeted ] || yum reinstall -y selinux-policy-targeted
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
 #
@@ -164,13 +164,13 @@ getent passwd \
 #
 echo "Correct labels."
 [ -n "$DEBUG" ] && read
-[ -x /sbin/fixfiles ] || yum install policycoreutils
+[ -x /sbin/fixfiles ] || yum install -y policycoreutils
 time fixfiles -R -a restore
 
 #
 echo "Merge *.rpmnew files semi-automatically."
 [ -n "$DEBUG" ] && read
-[ -x /usr/sbin/rpmconf ] || yum install rpmconf
+[ -x /usr/sbin/rpmconf ] || yum install -y rpmconf
 rpmconf -a
 
 #
@@ -201,7 +201,7 @@ egrep '^.{8}P ' ${TMPDIR}/RPM-VA_${DS}.txt \
     setcap "${fileCaps}" "${fileName}"
   done
 sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt
-#yum reinstall $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
+#yum reinstall -y $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
 
 #
 echo "Generate reports"
