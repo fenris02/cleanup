@@ -153,17 +153,18 @@ echo 'run' >> $YSHELL2
 [ -n "$DEBUG" ] && read
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
-yum shell $YSHELL -y --disableplugin=presto --skip-broken
-yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
-yum -y distribution-synchronization --disableplugin=presto --skip-broken
+mkdir -p /etc/selinux/targeted
+time yum shell $YSHELL -y --disableplugin=presto --skip-broken
+time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
+time yum distribution-synchronization -y --disableplugin=presto --skip-broken
 
 [ -f /etc/PackageKit/CommandNotFound.conf ] \
-  && sed -i -e 's/^SoftwareSourceSearch=true/SoftwareSourceSearch=false' /etc/PackageKit/CommandNotFound.conf
+  && sed -i -e 's/^SoftwareSourceSearch=true/SoftwareSourceSearch=false/' /etc/PackageKit/CommandNotFound.conf
 
 # Something went around above if this directory does not exist
 [ -n "$VERBOSE" ] && echo 'Resetting local selinux policy'
 [ -n "$DEBUG" ] && read
-[ -d /etc/selinux/targeted ] || yum reinstall -y selinux-policy-targeted
+[ -d /etc/selinux/targeted/policy ] || yum reinstall -y selinux-policy-targeted
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
 #
