@@ -40,6 +40,7 @@ EOT
 read
 
 #
+[ -n "$DEBUG" ] && VERBOSE='1'
 [ -n "$VERBOSE" ] && set -x
 
 #
@@ -152,8 +153,14 @@ echo 'run' >> $YSHELL2
 echo 'run' >> $YSHELL3
 
 #
+echo 'Generate package list before package-updates'
+[ -x /usr/bin/show-installed ] || yum install yum-utils
+show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
+
+#
 [ -n "$VERBOSE" ] && echo 'Removing dependency leaves and installing default package sets'
 [ -n "$DEBUG" ] && read
+[ -x /usr/sbin/semanage ] || yum install policycoreutils-python
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
@@ -175,6 +182,11 @@ semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 [ -n "$VERBOSE" ] && echo 'Remove duplicate packages if any found.'
 [ -n "$DEBUG" ] && read
 package-cleanup --cleandupes
+
+#
+echo 'Generate package list after package-updates'
+[ -x /usr/bin/show-installed ] || yum install yum-utils
+show-installed > ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
 
 #
 [ -n "$VERBOSE" ] && echo "Moving ~/.config/ directories to ~/.config.${DS}"
@@ -269,7 +281,7 @@ chmod 0700 ${TMPDIR}/raising-elephants.sh
 
 echo 'If you have questions, share this link.'
 [ -x /usr/bin/fpaste ] || yum install -y fpaste
-fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA2,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
+fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA2,SELINUX-CUSTOM-CONFIG,SHOW-INSTALLED1,SHOW-INSTALLED2,URGENT-REVIEW,YUM-SHELL,YUM-SHELL2,YUM-SHELL3}_${DS}.txt
 echo ''
 
 if [ -n "$LOG_ALL" ]; then
