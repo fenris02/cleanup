@@ -117,7 +117,6 @@ cat ->> $YSHELL <<EOT
 reinstall policycoreutils*
 reinstall selinux*
 install fpaste
-install policycoreutils
 install redhat-lsb
 install rpmconf
 install yum-plugin-local
@@ -164,10 +163,10 @@ show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
-time yum shell $YSHELL -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
 time yum distribution-synchronization -y --disableplugin=presto --skip-broken
+time yum shell $YSHELL -y --disableplugin=presto --skip-broken
 
 [ -f /etc/PackageKit/CommandNotFound.conf ] \
   && sed -i -e 's/^SoftwareSourceSearch=true/SoftwareSourceSearch=false/' /etc/PackageKit/CommandNotFound.conf
@@ -277,11 +276,14 @@ EOT
 chmod 0700 ${TMPDIR}/raising-elephants.sh
 
 # Done
-[ -n "$VERBOSE" ] && echo 'Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh'
+echo "Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh"
 
 echo 'If you have questions, share this link.'
 [ -x /usr/bin/fpaste ] || yum install -y fpaste
-fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA2,SELINUX-CUSTOM-CONFIG,SHOW-INSTALLED1,SHOW-INSTALLED2,URGENT-REVIEW,YUM-SHELL,YUM-SHELL2,YUM-SHELL3}_${DS}.txt
+for E in ${TMPDIR}/[A-Z]*_${DS}.txt; do
+  [ -s $E ] || rm $E
+done
+fpaste ${TMPDIR}/[A-Z]*_${DS}.txt
 echo ''
 
 if [ -n "$LOG_ALL" ]; then
