@@ -226,6 +226,7 @@ find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 if [ -n "$LOG_ALL" ]; then
   echo "Kill off logger"
   #exec 1>&- 2>&-
+  kill $TEEPID
   #wait $TEEPID
 fi
 
