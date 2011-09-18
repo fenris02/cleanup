@@ -19,8 +19,7 @@ telinit 3
 
 # Login as root and identify your primary network device
 nmcli con up id 'System eth0'
-yum install git
-curl -s 'http://fedorapeople.org/gitweb?p=fenris02/public_git/cleanup.git;a=blob_plain;f=distro-clean.sh;hb=HEAD' > /root/distro-clean.sh
+curl -s 'http://fedorapeople.org/gitweb?p=fenris02/public_git/cleanup.git;a=blob_plain;f=distro-clean.sh;hb=HEAD' |dos2unix > /root/distro-clean.sh
 chmod 0700 /root/distro-clean.sh
 
 # Double check your backups exits and are current.
