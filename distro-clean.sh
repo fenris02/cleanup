@@ -222,9 +222,10 @@ sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.t
 [ -n "$VERBOSE" ] && echo 'Generate reports'
 [ -n "$DEBUG" ] && read
 time rpm -Va > ${TMPDIR}/RPM-VA2_${DS}.txt 2>&1
-egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt \
+  |egrep -v '    /lib/modules/.*/modules.' > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
-find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
+find /etc -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Stop logging.  No changes below this point.
 if [ -n "$LOG_ALL" ]; then
