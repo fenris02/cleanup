@@ -26,7 +26,7 @@ if [ $(runlevel |awk '{print$NF}') != "3" ]; then
   echo "Must be run from runlevel 3."
   exit 3
 fi
- 
+
 cat -<<EOT
 Press ^C now if you do not have a good backup of your system.
 
@@ -156,6 +156,9 @@ mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 yum shell $YSHELL -y --disableplugin=presto --skip-broken
 yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
 yum -y distribution-synchronization --disableplugin=presto --skip-broken
+
+[ -f /etc/PackageKit/CommandNotFound.conf ] \
+  && sed -i -e 's/^SoftwareSourceSearch=true/SoftwareSourceSearch=false' /etc/PackageKit/CommandNotFound.conf
 
 # Something went around above if this directory does not exist
 [ -n "$VERBOSE" ] && echo 'Resetting local selinux policy'
