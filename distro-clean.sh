@@ -38,6 +38,11 @@ read
 #
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
+# needs to be above logging start
+echo "Set selinux to permissive mode"
+[ -n "$DEBUG" ] && read
+setenforce 0
+
 # Log all output to a file if LOG_ALL is set
 if [ -n "$LOG_ALL" ]; then
   PIPEFILE=$(mktemp -u ${TMPDIR}/${0##*/}-XXXXX.pipe)
@@ -50,11 +55,6 @@ if [ -n "$LOG_ALL" ]; then
   exec > $PIPEFILE 2>&1
   #exec < /dev/null 2<&1
 fi
-
-#
-echo "Set selinux to permissive mode"
-[ -n "$DEBUG" ] && read
-setenforce 0
 
 #
 echo "Cleaning up yumdb"
@@ -100,6 +100,14 @@ yum grouplist -v \
     echo "install @${GROUP}" >> $YSHELL
   done
 
+# reinstall duplicate packages, migtht clean them without breaking
+package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
+[ -s ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt ] && \
+  cat ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt | \
+    while reaad PKGNAME; do
+      rpm -q --qf 'reinstall %{name}.%{arch}\n' $PKGNAME >> $YSHELL
+    done
+
 # Add default package sets
 cat ->> $YSHELL <<EOT
 reinstall policycoreutils*
@@ -128,13 +136,17 @@ echo "Removing dependency leaves and installing default package sets"
 [ -n "$DEBUG" ] && read
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
-yum shell $YSHELL --disableplugin=presto
+yum shell $YSHELL --disableplugin=presto --skip-broken
+
+# Something went around above if this directory does not exist
+echo "Resetting local selinux policy"
+[ -n "$DEBUG" ] && read
+[ -d /etc/selinux/targeted ] || yum reinstall selinux-policy-targeted
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
 #
 echo "Remove duplicate packages if any found."
 [ -n "$DEBUG" ] && read
-package-cleanup --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 package-cleanup --cleandupes
 
 #
@@ -169,8 +181,9 @@ echo "Build problem report."
 
 # Need a better way to fix caps
 echo "Reset file capabilities"
+rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
 [ -n "$DEBUG" ] && read
-egrep '^.{8}P ' ${TMPDIR}/RPM-VA.txt \
+egrep '^.{8}P ' ${TMPDIR}/RPM-VA_${DS}.txt \
   |awk '{print$NF}' \
   |xargs rpm --filecaps -qf \
   |grep '= cap' \
@@ -184,14 +197,13 @@ sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.t
 #
 echo "Generate reports"
 [ -n "$DEBUG" ] && read
-rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
 egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 find /etc /var -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 # Stop logging.  No changes below this point.
 if [ -n "$LOG_ALL" ]; then
-  exec 1>&- 2>&-
+  #exec 1>&- 2>&-
   wait $TEEPID
 fi
 
