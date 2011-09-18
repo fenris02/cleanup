@@ -1,11 +1,12 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
 # Do not set TMPDIR to any tmpfs mount, these files should remain after boot.
 TMPDIR=/root/tmp
-DEBUG=""
-LOG_ALL="1"
+DEBUG=''
+VERBOSE='1'
+LOG_ALL='1'
 
 LANG=C
 DS=$(date +%Y%d%m)
@@ -36,10 +37,13 @@ EOT
 read
 
 #
+[ -n "$VERBOSE" ] && set -x
+
+#
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 # needs to be above logging start
-echo "Set selinux to permissive mode"
+[ -n "$VERBOSE" ] && echo 'Set selinux to permissive mode'
 [ -n "$DEBUG" ] && read
 setenforce 0
 
@@ -57,14 +61,14 @@ if [ -n "$LOG_ALL" ]; then
 fi
 
 #
-echo "Cleaning up yumdb"
+[ -n "$VERBOSE" ] && echo 'Cleaning up yumdb'
 [ -n "$DEBUG" ] && read
 rm /var/lib/rpm/__db.00?
 yum clean all
 yum-complete-transaction
 
 #
-echo "Removing old packages from cache directories"
+[ -n "$VERBOSE" ] && echo 'Removing old packages from cache directories'
 [ -n "$DEBUG" ] && read
 DIST=$(rpm --eval '%{dist}')
 for D in /var/cache/yum /var/lib/yum/plugins/local; do
@@ -75,11 +79,11 @@ for D in /var/cache/yum /var/lib/yum/plugins/local; do
 done
 
 #
-echo "Repairing permissions"
+[ -n "$VERBOSE" ] && echo 'Repairing permissions'
 [ -n "$DEBUG" ] && read
-echo "This may take a few minutes, resetting user/group ownership"
+[ -n "$VERBOSE" ] && echo 'This may take a few minutes, resetting user/group ownership'
 time rpm -a --setugids > /dev/null 2>&1
-echo "This may take a few minutes, resetting permissions"
+[ -n "$VERBOSE" ] && echo 'This may take a few minutes, resetting permissions'
 time rpm -a --setperms > /dev/null 2>&1
 
 [ -x /usr/bin/package-cleanup ] || yum install -y yum-utils
@@ -121,7 +125,7 @@ install redhat-lsb
 install rpmconf
 EOT
 
-echo run >> $YSHELL
+echo 'run' >> $YSHELL
 
 # Break out non-essential groups so that yum succeeds even on rawhide
 YSHELL2=${TMPDIR}/YUM-SHELL2_${DS}.txt
@@ -138,10 +142,10 @@ install @printing
 install memtest86+
 EOT
 
-echo run >> $YSHELL2
+echo 'run' >> $YSHELL2
 
 #
-echo "Removing dependency leaves and installing default package sets"
+[ -n "$VERBOSE" ] && echo 'Removing dependency leaves and installing default package sets'
 [ -n "$DEBUG" ] && read
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
@@ -150,18 +154,18 @@ yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
 yum -y distribution-synchronization --disableplugin=presto --skip-broken
 
 # Something went around above if this directory does not exist
-echo "Resetting local selinux policy"
+[ -n "$VERBOSE" ] && echo 'Resetting local selinux policy'
 [ -n "$DEBUG" ] && read
 [ -d /etc/selinux/targeted ] || yum reinstall -y selinux-policy-targeted
 semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
 #
-echo "Remove duplicate packages if any found."
+[ -n "$VERBOSE" ] && echo 'Remove duplicate packages if any found.'
 [ -n "$DEBUG" ] && read
 package-cleanup --cleandupes
 
 #
-echo "Moving ~/.config/ directories to ~/.config.${DS}"
+[ -n "$VERBOSE" ] && echo "Moving ~/.config/ directories to ~/.config.${DS}"
 [ -n "$DEBUG" ] && read
 getent passwd \
   |while IFS=: read userName passWord userID groupID geCos homeDir userShell; do
@@ -170,35 +174,35 @@ getent passwd \
   done
 
 #
-echo "Correct labels."
+[ -n "$VERBOSE" ] && echo 'Correct labels.'
 [ -n "$DEBUG" ] && read
 [ -x /sbin/fixfiles ] || yum install -y policycoreutils
 time fixfiles -R -a restore
 
 #
-echo "Merge *.rpmnew files semi-automatically."
+[ -n "$VERBOSE" ] && echo 'Merge *.rpmnew files semi-automatically.'
 [ -n "$DEBUG" ] && read
 [ -x /usr/sbin/rpmconf ] || yum install -y rpmconf
 rpmconf -a
 
 #
-echo "Build problem report."
+[ -n "$VERBOSE" ] && echo 'Build problem report.'
 [ -n "$DEBUG" ] && read
 [ -f /etc/sysconfig/prelink ] \
   && . /etc/sysconfig/prelink \
   && /usr/sbin/prelink -av $PRELINK_OPTS >> /var/log/prelink/prelink.log 2>&1
 
 #
-echo "configure dynamic linker run-time bindings"
+[ -n "$VERBOSE" ] && echo 'configure dynamic linker run-time bindings'
 /sbin/ldconfig
 
 #
-echo "Verify all installed packages"
+[ -n "$VERBOSE" ] && echo 'Verify all installed packages'
 [ -n "$DEBUG" ] && read
 time rpm -Va > ${TMPDIR}/RPM-VA_${DS}.txt 2>&1
 
 # Need a better way to fix caps
-echo "Reset file capabilities"
+[ -n "$VERBOSE" ] && echo 'Reset file capabilities'
 [ -n "$DEBUG" ] && read
 egrep '^.{8}P ' ${TMPDIR}/RPM-VA_${DS}.txt \
   |awk '{print$NF}' \
@@ -212,7 +216,7 @@ sort -u -o ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt ${TMPDIR}/FCAPS-REINSTALL_${DS}.t
 #yum reinstall -y $(cat ${TMPDIR}/FCAPS-REINSTALL_${DS}.txt)
 
 #
-echo "Generate reports"
+[ -n "$VERBOSE" ] && echo 'Generate reports'
 [ -n "$DEBUG" ] && read
 egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 egrep '^.{9}  c /' ${TMPDIR}/RPM-VA_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
@@ -245,12 +249,12 @@ EOT
 chmod 0700 ${TMPDIR}/raising-elephants.sh
 
 # Done
-echo "Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh"
+[ -n "$VERBOSE" ] && echo 'Verify packages are installed the way you want and then type ${TMPDIR}/raising-elephants.sh'
 
-echo -n "If you have questions, share this link."
+echo 'If you have questions, share this link.'
 [ -x /usr/bin/fpaste ] || yum install -y fpaste
 fpaste ${TMPDIR}/{DUPLICATE-PACKAGES,FCAPS-REINSTALL,REVIEW-CONFIGS,REVIEW-OBSOLETE-CONFIGS,RPM-VA,SELINUX-CUSTOM-CONFIG,URGENT-REVIEW,YUM-SHELL}_${DS}.txt
-echo ""
+echo ''
 
 if [ -n "$LOG_ALL" ]; then
   echo "Detailed log can be found in $LOGFILE"
