@@ -164,7 +164,7 @@ semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
 time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
-time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
+#time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
 time yum distribution-synchronization -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL -y --disableplugin=presto --skip-broken
 
