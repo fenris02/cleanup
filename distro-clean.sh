@@ -153,7 +153,7 @@ echo 'run' >> $YSHELL3
 
 #
 echo 'Generate package list before package-updates'
-[ -x /usr/bin/show-installed ] || yum install yum-utils
+[ -x /usr/bin/show-installed ] || yum install -y yum-utils
 show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
 
 #
