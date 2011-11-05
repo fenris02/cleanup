@@ -94,6 +94,7 @@ time rpm -a --setperms > /dev/null 2>&1
 
 YSHELL=${TMPDIR}/YUM-SHELL_${DS}.txt
 YSHELL2=${TMPDIR}/YUM-SHELL2_${DS}.txt
+# Reinstall desktops and sync
 YSHELL3=${TMPDIR}/YUM-SHELL3_${DS}.txt
 
 # Locate installed leaves packages that were installed as a dep of some other package
@@ -104,7 +105,7 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
     echo remove $n
   done > $YSHELL
 
-# reinstall duplicate packages, migtht clean them without breaking
+# reinstall duplicate packages, might clean them without breaking
 package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 [ -s ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt ] && \
   cat ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt | \
@@ -145,10 +146,11 @@ yum grouplist -v \
     echo "install @${GROUP}" >> $YSHELL3
   done
 
-echo 'distribution-synchronization' >> $YSHELL3
-
+# Add default package sets
 echo 'run' >> $YSHELL
+# Break out non-essential groups so that yum succeeds even on rawhide
 echo 'run' >> $YSHELL2
+# Locate installed desktops -- Hack around broken depsolver
 echo 'run' >> $YSHELL3
 
 #
@@ -163,8 +165,10 @@ show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
+time yum update -y \*-release
+time yum update -y yum rpm
 time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
-#time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
+time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
 time yum distribution-synchronization -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL -y --disableplugin=presto --skip-broken
 
