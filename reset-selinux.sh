@@ -1,21 +1,32 @@
 #!/bin/bash
 
+# Partial script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
+
+DS=$(/bin/date +%Y%d%m)
 LANG=C
-DS=$(date +%Y%d%m)
-TMPDIR=/root/tmp
+TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
-[ -x /usr/sbin/semanage ] || yum install -y policycoreutils-python
+if [ "$(/usr/bin/whoami)" != "root" ]; then
+  echo "Must be run as root."
+  exit 1
+fi
+
 [ -x /usr/sbin/setenforce ] || yum install -y libselinux-utils
+/usr/sbin/setenforce 0
 
-setenforce 0
-semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+[ -x /usr/sbin/semanage ] || yum install -y policycoreutils-python
+/usr/sbin/semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 
-mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
-install -d -m 0755 -o root -g root /etc/selinux/targeted
-yum reinstall -y selinux-policy{,-targeted} policycoreutils{,-newrole,-restorecond,-sandbox}
+/bin/mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
+/usr/bin/install -d -m 0755 -o root -g root /etc/selinux/targeted
+/usr/bin/yum reinstall -y \
+  libselinux{,-python,utils} \
+  policycoreutils{,-newrole,-restorecond,-sandbox} \
+  selinux-policy{,-targeted} \
+  #
 
-semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
-setenforce 1
+/usr/sbin/semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+/usr/sbin/setenforce 1
 
 #EOF

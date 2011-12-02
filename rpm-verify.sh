@@ -2,9 +2,10 @@
 
 # Partial script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
-TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
-LANG=C
 DS=$(/bin/date +%Y%d%m)
+LANG=C
+TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
+[ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 if [ "$(/usr/bin/whoami)" != "root" ]; then
   echo "Must be run as root."
