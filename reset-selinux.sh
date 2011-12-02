@@ -27,6 +27,11 @@ fi
   #
 
 /usr/sbin/semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+
+[ -x /sbin/fixfiles ] || yum install -y policycoreutils
+echo "Resetting selinux labels for packaged files ... this may take some time."
+time fixfiles -R -a restore
+
 /usr/sbin/setenforce 1
 
 #EOF
