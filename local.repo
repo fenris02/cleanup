@@ -1,0 +1,12 @@
+[local-base]
+baseurl=http://192.168.1.100/mirror/F$releasever-$basearch/
+	file:///media/$basearch/
+cost=50
+enabled=1
+failovermethod=priority
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+metadata_expire=-1
+name=Localhost - Fedora $releasever - $basearch
+skip_if_unavailable=1
+
