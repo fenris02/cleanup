@@ -12,6 +12,12 @@ if [ "$(/usr/bin/whoami)" != "root" ]; then
   exit 1
 fi
 
+[ -f /etc/sysconfig/prelink ] \
+  && . /etc/sysconfig/prelink \
+  && /usr/sbin/prelink -av $PRELINK_OPTS >> /var/log/prelink/prelink.log 2>&1
+
+/sbin/ldconfig
+
 echo "This may take up to 7.5mins, please wait ..."
 time /bin/rpm -Va > ${TMPDIR}/RPM-VA2_${DS}.txt 2>&1
 /bin/egrep -v '^.{9}  (c /|  /lib/modules/.*/modules\.)' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
