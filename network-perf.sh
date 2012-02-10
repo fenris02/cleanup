@@ -64,10 +64,10 @@ Dependant upon physical line:
 
 Dependant upon buffer size and RTT:
 2a) 17kB buffer: $test2a Mbps
+2e) 64kB buffer: $test2e Mbps
 2b) 262kB buffer: $test2b Mbps
 2c) 4M buffer: $test2c Mbps
 2d) Min buffer req to fill BW: $test2d b
-2e) 64kB buffer: $test2e Mbps
 
 Dependant upon MTU, RTT, and LOSS: (window scaling enabled)
 3a) default MTU: $test3a Mbps
