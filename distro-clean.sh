@@ -158,6 +158,15 @@ echo 'Generate package list before package-updates'
 [ -x /usr/bin/show-installed ] || yum install -y yum-utils
 show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
 
+[ -n "$VERBOSE" ] && echo 'Importing Keys for Fedora versions: https://fedoraproject.org/keys'
+[ -n "$DEBUG" ] && read
+curl -s https://fedoraproject.org/keys |\
+  grep fedoraproject.org/static |\
+  cut -f2 -d\" |\
+  while read URL; do
+    rpm --import $URL
+  done
+
 #
 [ -n "$VERBOSE" ] && echo 'Removing dependency leaves and installing default package sets'
 [ -n "$DEBUG" ] && read
