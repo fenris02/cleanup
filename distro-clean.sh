@@ -68,6 +68,8 @@ fi
 [ -n "$VERBOSE" ] && echo 'Cleaning up yumdb'
 [ -n "$DEBUG" ] && read
 rm /var/lib/rpm/__db.00?
+rpm --rebuilddb
+yum update -y /etc/*-release dracut rpm yum
 yum clean all
 yum-complete-transaction
 
@@ -174,8 +176,6 @@ curl -s https://fedoraproject.org/keys |\
 semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 mkdir -p /etc/selinux/targeted
-time yum update -y \*-release
-time yum update -y yum rpm
 time yum shell $YSHELL2 -y --disableplugin=presto --skip-broken
 time yum shell $YSHELL3 -y --disableplugin=presto --skip-broken
 time yum distribution-synchronization -y --disableplugin=presto --skip-broken
