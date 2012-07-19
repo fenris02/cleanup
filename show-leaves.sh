@@ -22,9 +22,17 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
   |while read n a a; do \
     echo remove $n
   done > $YSHELL
-echo "run" >> $YSHELL
 
-echo "To remove auto-detected leaf packages: yum shell $YSHELL"
-cat $YSHELL
+if [ -s $YSHELL ]; then
+  echo "Leaf packages:"
+  cat $YSHELL
+
+  echo ""
+  echo "run" >> $YSHELL
+  echo "To remove auto-detected leaf packages: yum shell $YSHELL"
+else
+  rm $YSHELL
+  echo "No leaf packages detected."
+fi
 
 #EOF

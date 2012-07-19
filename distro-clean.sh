@@ -158,7 +158,7 @@ echo 'run' >> $YSHELL3
 #
 echo 'Generate package list before package-updates'
 [ -x /usr/bin/show-installed ] || yum install -y yum-utils
-show-installed > ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
+show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED1_${DS}.txt
 
 [ -n "$VERBOSE" ] && echo 'Importing Keys for Fedora versions: https://fedoraproject.org/keys'
 [ -n "$DEBUG" ] && read
@@ -198,7 +198,7 @@ package-cleanup --cleandupes
 #
 echo 'Generate package list after package-updates'
 [ -x /usr/bin/show-installed ] || yum install yum-utils
-show-installed > ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
 
 #
 [ -n "$VERBOSE" ] && echo "Moving ~/.config/ directories to ~/.config.${DS}"
