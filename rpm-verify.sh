@@ -23,6 +23,11 @@ time /bin/rpm -Va > ${TMPDIR}/RPM-VA2_${DS}.txt 2>&1
 /bin/egrep -v '^.{9}  (c /|  /lib/modules/.*/modules\.)' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 /bin/egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 /bin/find /etc -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
+if [ -x /usr/bin/show-installed ]; then
+/usr/bin/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+else
+$(dirname $0)/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+fi
 
 /usr/bin/fpaste ${TMPDIR}/[A-Z]*_${DS}.txt
 
