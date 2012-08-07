@@ -29,6 +29,10 @@ else
 $(dirname $0)/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
 fi
 
+echo "=========="
+echo "TMPDIR = ${TMPDIR}"
+echo "fpaste ${TMPDIR}/[A-Z]*_${DS}.txt"
+echo "=========="
 /usr/bin/fpaste ${TMPDIR}/[A-Z]*_${DS}.txt
 
 #EOF
