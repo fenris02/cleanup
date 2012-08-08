@@ -31,8 +31,9 @@ fi
 
 echo "=========="
 echo "TMPDIR = ${TMPDIR}"
-echo "fpaste ${TMPDIR}/[A-Z]*_${DS}.txt"
+echo "fpaste ${TMPDIR}/{REVIEW,SHOW,URGENT}*_${DS}.txt"
+echo "excluding ${TMPDIR}/RPM-VA2_${DS}.txt to work around a bug"
 echo "=========="
-/usr/bin/fpaste ${TMPDIR}/[A-Z]*_${DS}.txt
+/usr/bin/fpaste ${TMPDIR}/{REVIEW,SHOW,URGENT}*_${DS}.txt
 
 #EOF
