@@ -18,9 +18,9 @@ fi
 
 /sbin/ldconfig
 
-echo "This may take up to 7.5mins, please wait ..."
+echo "This may take 7.5mins or longer, please wait ... (Might be a good time for coffee)"
 time /bin/rpm -Va > ${TMPDIR}/RPM-VA2_${DS}.txt 2>&1
-/bin/egrep -v '^.{9}  (c /|  /lib/modules/.*/modules\.)' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
+/bin/egrep -v '^.{9}  (c /|  /lib/modules/.*/modules\.|  /usr/src/kernels/)' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 /bin/egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 /bin/find /etc -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 if [ -x /usr/bin/show-installed ]; then
