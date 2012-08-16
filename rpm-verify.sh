@@ -12,10 +12,11 @@ if [ "$(/usr/bin/whoami)" != "root" ]; then
   exit 1
 fi
 
-echo "Updating prelink info ..."
-[ -f /etc/sysconfig/prelink ] \
-  && . /etc/sysconfig/prelink \
-  && /usr/sbin/prelink -av $PRELINK_OPTS >> /var/log/prelink/prelink.log 2>&1
+if [ -f /etc/sysconfig/prelink ]; then
+  echo "Updating prelink info ..."
+  . /etc/sysconfig/prelink \
+  time /usr/sbin/prelink -av $PRELINK_OPTS >> /var/log/prelink/prelink.log 2>&1
+fi
 
 /sbin/ldconfig
 
