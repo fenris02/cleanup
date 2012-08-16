@@ -26,6 +26,9 @@ echo "Generating reports ..."
 /bin/egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
 /bin/find /etc -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
+echo "Requesting extra reporting tools to be installed ..."
+/usr/bin/yum -q install /usr/sbin/semanage /usr/bin/rpmdev-rmdevelrpms /usr/bin/show-installed /usr/sbin/yumdb
+
 if [ -x /usr/sbin/semanage ]; then
   echo "Reporting SELinux policy ..."
   /usr/sbin/semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
@@ -38,11 +41,16 @@ fi
 
 echo "Finding installed packages ..."
 if [ -x /usr/bin/show-installed ]; then
-/usr/bin/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+  /usr/bin/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
 else
-$(dirname $0)/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+  $(dirname $0)/show-installed -f kickstart -e -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
 fi
 /bin/sort -o ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt ${TMPDIR}/SHOW-INSTALLED2_${DS}.txt
+
+if [ -x /usr/sbin/yumdb ]; then
+  echo "Locating rpm packages that were installed without yum ..."
+  /usr/sbin/yumdb unset from_repo > ${TMPDIR}/SHOW-EXTERNAL_${DS}.txt
+fi
 
 cat - <<EOT
 ==========
