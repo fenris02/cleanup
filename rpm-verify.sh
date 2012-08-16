@@ -64,12 +64,12 @@ TMPDIR = ${TMPDIR}
 EOT
 
 for fp in ${TMPDIR}/{REVIEW,SELINUX,SHOW,URGENT}*_${DS}.txt; do
-  cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
+  /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
 ===== $fp
 ===============================================================================
 EOT
-  cat $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
+  /bin/cat $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
 /usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
