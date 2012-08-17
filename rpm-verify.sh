@@ -22,7 +22,7 @@ fi
 echo "rpm-Va: This may take 12mins or longer, please wait ... (Might be a good time for coffee)"
 time /bin/rpm -Va > ${TMPDIR}/rpm-va2_${DS}.txt 2>&1
 # Filter out prelink messages, kmod files, and kernel-devel files:
-/bin/egrep -v '^(prelink: /|S\..\.\.\.\.\.\.  |.{9}    /lib/modules/.*/modules\.|.{9}    /usr/src/kernels/)' \
+/bin/egrep -v '^(prelink: /|S\..\.\.\.\.\.\.    /|.{9}    /lib/modules/.*/modules\.|.{9}    /usr/src/kernels/)' \
   ${TMPDIR}/rpm-va2_${DS}.txt > ${TMPDIR}/RPM-VA2_${DS}.txt
 echo "Generating reports ..."
 /bin/egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
