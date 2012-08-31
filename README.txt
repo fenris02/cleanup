@@ -11,6 +11,10 @@ Read-Write:  git://fedorapeople.org/fenris02/public_git/cleanup.git
 Read-Only:   http://fedorapeople.org//fenris02/public_git/cleanup.git
 Last resort: ssh://fedorapeople.org//fenris02/public_git/cleanup.git
 
+Frequently asked for files:
+http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/plain/rpm-verify.sh
+http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/plain/raising-elephants.sh
+
 QUICKSTART (if you already have current backups):
 
 su -
@@ -18,7 +22,8 @@ telinit 3
 
 # Login as root and identify your primary network device
 nmcli con up id 'System eth0'
-curl -s 'http://fedorapeople.org/gitweb?p=fenris02/public_git/cleanup.git;a=blob_plain;f=distro-clean.sh;hb=HEAD' |dos2unix > /root/distro-clean.sh
+curl -s http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/plain/distro-clean.sh \
+  |dos2unix > /root/distro-clean.sh
 chmod 0700 /root/distro-clean.sh
 
 # Double check your backups exits and are current.
