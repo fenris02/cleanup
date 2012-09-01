@@ -34,7 +34,9 @@ echo "Requesting extra reporting tools to be installed ..."
 
 if [ -x /usr/sbin/semanage ]; then
   echo "Reporting SELinux policy ..."
-  /usr/sbin/semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+  TMPF=$(/bin/mktemp -u /tmp/${0##*/}-XXXXX.txt)
+  /usr/sbin/semanage -o $TMPF
+  /bin/mv $TMPF ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
 fi
 
 if [ -x /usr/bin/rpmdev-rmdevelrpms ]; then
@@ -55,6 +57,11 @@ if [ -x /usr/sbin/yumdb ]; then
   /usr/sbin/yumdb unset from_repo > ${TMPDIR}/SHOW-EXTERNAL_${DS}.txt
 fi
 
+if [ -x /usr/bin/package-cleanup ]; then
+  echo "Reporting Duplicate RPMs"
+  /usr/bin/package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
+fi
+
 cat - <<EOT
 ==========
 TMPDIR = ${TMPDIR}
@@ -66,13 +73,15 @@ TMPDIR = ${TMPDIR}
 ==========
 EOT
 
-for fp in ${TMPDIR}/{REVIEW,SELINUX,SHOW,URGENT}*_${DS}.txt; do
-  /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
+for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,DUPLICATE-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-INSTALLED2}*_${DS}.txt; do
+  if [ -s $fp ]; then
+    /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
 ===== $fp
 ===============================================================================
 EOT
-  /bin/cat $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
+    /bin/cat $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
+  fi
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
 /usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
