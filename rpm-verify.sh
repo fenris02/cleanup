@@ -54,12 +54,21 @@ fi
 
 if [ -x /usr/sbin/yumdb ]; then
   echo "Locating rpm packages that were installed without yum ..."
-  /usr/sbin/yumdb unset from_repo > ${TMPDIR}/SHOW-EXTERNAL_${DS}.txt
+  /usr/sbin/yumdb --noplugins unset from_repo > ${TMPDIR}/SHOW-EXTERNAL_${DS}.txt
 fi
 
 if [ -x /usr/bin/package-cleanup ]; then
   echo "Reporting Duplicate RPMs"
   /usr/bin/package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
+fi
+
+if [ -x /usr/bin/repoquery ]; then
+  /usr/bin/repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
+    `/usr/bin/package-cleanup --leaves -q --all` \
+    |/bin/grep '\- dep' \
+    |while read n a a; do \
+      echo remove $n
+    done > ${TMPDIR}/SHOW-LEAVES_${DS}.txt
 fi
 
 cat - <<EOT
@@ -73,7 +82,7 @@ TMPDIR = ${TMPDIR}
 ==========
 EOT
 
-for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,DUPLICATE-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-INSTALLED2}*_${DS}.txt; do
+for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,DUPLICATE-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
   if [ -s $fp ]; then
     /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
