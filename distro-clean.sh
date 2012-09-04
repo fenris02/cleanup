@@ -9,7 +9,7 @@ VERBOSE='1'
 LOG_ALL='1'
 
 LANG=C
-DS=$(date +%Y%d%m)
+DS=$(date +%Y%m%d)
 
 if [ "$(whoami)" != "root" ]; then
   echo "Must be run as root."

@@ -7,7 +7,7 @@ if [ "$(/usr/bin/whoami)" != "root" ]; then
   exit 1
 fi
 
-DS=$(/bin/date +%Y%d%m)
+DS=$(/bin/date +%Y%m%d)
 TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 

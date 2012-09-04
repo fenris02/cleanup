@@ -2,7 +2,7 @@
 
 # Partial script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
-DS=$(/bin/date +%Y%d%m)
+DS=$(/bin/date +%Y%m%d)
 LANG=C
 TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
