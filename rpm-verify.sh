@@ -57,8 +57,8 @@ if [ -x /usr/sbin/yumdb ]; then
   /usr/sbin/yumdb --noplugins unset from_repo > ${TMPDIR}/SHOW-EXTERNAL_${DS}.txt
 fi
 
+echo "Reporting Problem RPMs"
 if [ -x /usr/bin/package-cleanup ]; then
-  echo "Reporting Problem RPMs"
   /usr/bin/package-cleanup -q --problems > ${TMPDIR}/PROBLEM-PACKAGES_${DS}.txt
 else
   /bin/rpm -Va --nofiles --noscripts > ${TMPDIR}/PROBLEM-PACKAGES_${DS}.txt
@@ -105,6 +105,6 @@ EOT
   fi
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
-#/usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
+/usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
 
 #EOF
