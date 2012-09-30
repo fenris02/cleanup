@@ -58,6 +58,13 @@ if [ -x /usr/sbin/yumdb ]; then
 fi
 
 if [ -x /usr/bin/package-cleanup ]; then
+  echo "Reporting Problem RPMs"
+  /usr/bin/package-cleanup -q --problems > ${TMPDIR}/PROBLEM-PACKAGES_${DS}.txt
+else
+  /bin/rpm -Va --nofiles --noscripts > ${TMPDIR}/PROBLEM-PACKAGES_${DS}.txt
+fi
+
+if [ -x /usr/bin/package-cleanup ]; then
   echo "Reporting Duplicate RPMs"
   /usr/bin/package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 fi
@@ -87,7 +94,7 @@ TMPDIR = ${TMPDIR}
 ==========
 EOT
 
-for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
+for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
   if [ -s $fp ]; then
     /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
@@ -98,6 +105,6 @@ EOT
   fi
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
-/usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
+#/usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
 
 #EOF
