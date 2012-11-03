@@ -111,7 +111,7 @@ repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
 package-cleanup -q --dupes > ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt
 [ -s ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt ] && \
   cat ${TMPDIR}/DUPLICATE-PACKAGES_${DS}.txt | \
-    while reaad PKGNAME; do
+    while read PKGNAME; do
       rpm -q --qf 'reinstall %{name}.%{arch}\n' $PKGNAME >> $YSHELL
     done
 
