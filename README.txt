@@ -7,9 +7,9 @@ Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
 Access URLs:
 Git-Web:     http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/tree/
-Read-Write:  git://fedorapeople.org/fenris02/public_git/cleanup.git
-Read-Only:   http://fedorapeople.org//fenris02/public_git/cleanup.git
-Last resort: ssh://fedorapeople.org//fenris02/public_git/cleanup.git
+Read-Write:  git://fedorapeople.org/home/fedora/fenris02/public_git/cleanup.git
+Read-Only:   http://fedorapeople.org/gitrepos/fenris02/public_git/cleanup.git
+Last Resort: ssh://fedorapeople.org/home/fedora/fenris02/public_git/cleanup.git
 
 Frequently asked for files:
 http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/plain/rpm-verify.sh

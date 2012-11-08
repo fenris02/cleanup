@@ -24,6 +24,7 @@ time /bin/rpm -Va > ${TMPDIR}/rpm-va2_${DS}.txt 2>&1
 # Filter out prelink messages, kmod files, and kernel-devel files:
 /bin/egrep -v '^(prelink: /|S\..\.\.\.\.\.\.    /|.{9}    /lib/modules/.*/modules\.|.{9}    /usr/src/kernels/)' \
   ${TMPDIR}/rpm-va2_${DS}.txt > ${TMPDIR}/RPM-VA2_${DS}.txt
+
 echo "Generating reports ..."
 /bin/egrep -v '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/URGENT-REVIEW_${DS}.txt
 /bin/egrep '^.{9}  c /' ${TMPDIR}/RPM-VA2_${DS}.txt > ${TMPDIR}/REVIEW-CONFIGS_${DS}.txt
@@ -105,6 +106,9 @@ EOT
   fi
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
-/usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
+
+if [ "x$1" != "xNOPOST" ]; then
+  /usr/bin/fpaste ${TMPDIR}/fpaste-output_${DS}.txt
+fi
 
 #EOF
