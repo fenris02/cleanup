@@ -2,6 +2,7 @@
 
 # Partial script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
 
+VERBOSE=1
 DS=$(/bin/date +%Y%m%d)
 LANG=C
 TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
@@ -20,7 +21,7 @@ time rpm -a --setugids > /dev/null 2>&1
 [ -n "$VERBOSE" ] && echo 'This may take a few minutes, resetting permissions'                                          
 time rpm -a --setperms > /dev/null 2>&1
 
-echo 'This may take a few minutes, resetting file capabilities'
+[ -n "$VERBOSE" ] && echo 'This may take a few minutes, resetting file capabilities'
 time rpm -Va > ${TMPDIR}/rpm-Va0.txt 2>&1;
 awk '/^.{8}P /{print$NF}' ${TMPDIR}/rpm-Va0.txt \
   |xargs rpm --filecaps -qf \
