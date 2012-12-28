@@ -31,7 +31,13 @@ echo "Generating reports ..."
 /bin/find /etc -name '*.rpm?*' > ${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt
 
 echo "Requesting extra reporting tools to be installed ..."
-/usr/bin/yum -q install /usr/sbin/semanage /usr/bin/rpmdev-rmdevelrpms /usr/bin/show-installed /usr/sbin/yumdb
+# yum -q install fpaste yum-utils rpmdevtools policycoreutils-python
+/usr/bin/yum -q install \
+  /usr/bin/fpaste \
+  /usr/bin/package-cleanup /usr/bin/repoquery /usr/bin/show-installed /usr/sbin/yumdb \
+  /usr/bin/rpmdev-rmdevelrpms \
+  /usr/sbin/semanage \
+  #
 
 if [ -x /usr/sbin/semanage ]; then
   echo "Reporting SELinux policy ..."
@@ -76,6 +82,7 @@ if [ -x /usr/bin/package-cleanup ]; then
 fi
 
 if [ -x /usr/bin/repoquery ]; then
+  echo "Collect leaf RPMs"
   /usr/bin/repoquery --installed --qf "%{nvra} - %{yumdb_info.reason}" \
     `/usr/bin/package-cleanup --leaves -q --all` \
     |/bin/grep '\- dep' \
