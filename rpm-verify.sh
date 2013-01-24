@@ -91,6 +91,9 @@ if [ -x /usr/bin/repoquery ]; then
     done > ${TMPDIR}/SHOW-LEAVES_${DS}.txt
 fi
 
+echo "Collect list of enabled repos"
+yum repolist > ${TMPDIR}/YUM-REPOLIST_${DS}.txt
+
 cat - <<EOT
 ==========
 TMPDIR = ${TMPDIR}
@@ -102,7 +105,7 @@ TMPDIR = ${TMPDIR}
 ==========
 EOT
 
-for fp in ${TMPDIR}/{URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
+for fp in ${TMPDIR}/{YUM-REPOLIST,URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
   if [ -s $fp ]; then
     /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
