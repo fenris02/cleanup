@@ -19,6 +19,9 @@ fi
 
 /sbin/ldconfig
 
+# Remove temporary files
+rm /var/lib/rpm/__db.00?
+
 echo "rpm-Va: This may take 12mins or longer, please wait ... (Might be a good time for coffee)"
 time /bin/rpm -Va > ${TMPDIR}/rpm-va2_${DS}.txt 2>&1
 # Filter out prelink messages, kmod files, and kernel-devel files:
