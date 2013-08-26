@@ -20,7 +20,7 @@ fi
 /sbin/ldconfig
 
 # Remove temporary files
-rm /var/lib/rpm/__db.00?
+/bin/rm /var/lib/rpm/__db.00?
 
 echo "rpm-Va: This may take 12mins or longer, please wait ... (Might be a good time for coffee)"
 time /bin/rpm -Va > ${TMPDIR}/rpm-va2_${DS}.txt 2>&1
@@ -39,7 +39,7 @@ if [ \! -f /var/lib/yum/groups/installed ]; then
   # to groups as objects without having to reinstall.
   if [ 0$(rpm -qf /etc/redhat-release --qf '%{version}\n') -gt 18 ]; then
     echo "F19 hack to help from upgrades"
-    yum group mark convert
+    /usr/bin/yum group mark convert
   fi
 fi
 
@@ -105,9 +105,9 @@ if [ -x /usr/bin/repoquery ]; then
 fi
 
 echo "Collect list of enabled repos"
-yum repolist > ${TMPDIR}/YUM-REPOLIST_${DS}.txt
+/usr/bin/yum repolist > ${TMPDIR}/YUM-REPOLIST_${DS}.txt
 
-cat - <<EOT
+/bin/cat - <<EOT
 ==========
 TMPDIR = ${TMPDIR}
 ==========
