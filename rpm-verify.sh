@@ -125,7 +125,13 @@ for fp in ${TMPDIR}/{YUM-REPOLIST,URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,
 ===== $fp
 ===============================================================================
 EOT
-    /bin/cat $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
+    ### Limit each output file to 1000 lines to prevent excessive flooding.
+    WCL=$(/usr/bin/wc -l $fp |/usr/bin/gawk '{print$1}')
+    if [ $WCL -gt 1000 ]; then
+      echo "*** File $fp truncated to 1000 lines, was $WCL lines. ***"
+      echo "*** File $fp truncated to 1000 lines, was $WCL lines. ***" >> ${TMPDIR}/fpaste-output_${DS}.txt
+    fi
+    /usr/bin/head -n1000 $fp >> ${TMPDIR}/fpaste-output_${DS}.txt
   fi
 done
 echo fpaste ${TMPDIR}/fpaste-output_${DS}.txt
