@@ -4,6 +4,7 @@
 #
 
 Script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
+Mirrored on https://fedoraproject.org/wiki/User:Fenris02/Distribution_upgrades_and_cleaning_up_after_them
 
 Access URLs:
 Git-Web:     http://fedorapeople.org/cgit/fenris02/public_git/cleanup.git/tree/

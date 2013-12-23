@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Partial script version of http://fedorasolved.org/Members/fenris02/post_upgrade_cleanup
+# Mirrored on https://fedoraproject.org/wiki/User:Fenris02/Distribution_upgrades_and_cleaning_up_after_them
+
 LANG=C
 if [ "$(/usr/bin/whoami)" != "root" ]; then
   echo "Must be run as root."
