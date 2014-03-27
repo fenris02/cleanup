@@ -109,6 +109,11 @@ fi
 echo "Collect list of enabled repos"
 /usr/bin/yum repolist > ${TMPDIR}/YUM-REPOLIST_${DS}.txt
 
+echo "Collecting distribution-synchronization differences"
+echo n |\
+  /usr/bin/yum distro-sync |\
+  /bin/sed -e '1,/Dependencies Resolved/d;' > ${TMPDIR}/YUM-DISTROSYNC_${DS}.txt
+
 /bin/cat - <<EOT
 ==========
 TMPDIR = ${TMPDIR}
@@ -120,7 +125,7 @@ TMPDIR = ${TMPDIR}
 ==========
 EOT
 
-for fp in ${TMPDIR}/{YUM-REPOLIST,URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
+for fp in ${TMPDIR}/{YUM-REPOLIST,YUM-DISTROSYNC,URGENT-REVIEW,REVIEW-CONFIGS,PROBLEM-PACKAGES,DUPLICATE-PACKAGES,ORPHANED-PACKAGES,REVIEW-OBSOLETE-CONFIGS,SELINUX-CUSTOM-CONFIG,SHOW-DEVELRPMS,SHOW-EXTERNAL,SHOW-LEAVES,SHOW-INSTALLED2}*_${DS}.txt; do
   if [ -s $fp ]; then
     /bin/cat - >> ${TMPDIR}/fpaste-output_${DS}.txt <<EOT
 ===============================================================================
