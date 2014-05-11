@@ -8,17 +8,24 @@
 # Step 1) sudo yum install duplicity gnupg openssh-clients
 # Step 2) Create /root/.passphrase with some phrase you will remember.
 # Step 3) Edit the BACKUP_URL below.
-# Step 4) Copy this file to /etc/cron.daily/
+# Step 4) sudo install -c -m 0755 -o root $THIS_FILE /etc/cron.daily/
 
 # User settings:
 # Where to upload the backups
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 
 # Extra duplicity options
-EXTRA_DUPLICITY="--allow-source-mismatch --extra-clean"
+EXTRA_DUPLICITY="
+--allow-source-mismatch \
+--archive-dir /root/.cache/duplicity \
+--asynchronous-upload \
+--full-if-older-than 7D \
+--log-file /var/log/duplicity.log \
+--verbosity notice \
+--volsize 250 \
+"
 
 # Loading the day of the month in a variable.
-DOW=$(/bin/date +%u)
 TMPDIR=/root/tmp
 
 # Check to see if we have a SSH key
@@ -118,15 +125,9 @@ fi
 + /var/www
 EOT
 
-# Full backup on Sunday
-if [ $DOW = 7 ]; then
-  FULL="full"
-else
-  FULL=""
-fi
-
-/usr/bin/duplicity $FULL $EXTRA_DUPLICITY --no-encryption /root/.gnupg $BACKUP_URL/keys
-/usr/bin/duplicity $FULL $EXTRA_DUPLICITY --include-filelist ${TMPDIR}/duplicity-backups.txt / $BACKUP_URL
+date --rfc-3339=seconds >> /var/log/duplicity.log
+/usr/bin/duplicity $EXTRA_DUPLICITY --no-encryption /root/.gnupg $BACKUP_URL/keys
+/usr/bin/duplicity $EXTRA_DUPLICITY --include-filelist ${TMPDIR}/duplicity-backups.txt / $BACKUP_URL
 
 # Check http://www.nongnu.org/duplicity/duplicity.1.html for all the options
 # available for Duplicity.
