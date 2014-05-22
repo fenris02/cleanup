@@ -18,12 +18,12 @@ BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 EXTRA_DUPLICITY="
 --allow-source-mismatch \
 --archive-dir /root/.cache/duplicity \
---asynchronous-upload \
 --full-if-older-than 7D \
 --log-file /var/log/duplicity.log \
 --verbosity notice \
 --volsize 250 \
 "
+# Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
 # Loading the day of the month in a variable.
 TMPDIR=/root/tmp
