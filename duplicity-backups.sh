@@ -26,7 +26,7 @@ EXTRA_DUPLICITY="
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
 # Loading the day of the month in a variable.
-TMPDIR=/root/tmp
+export TMPDIR=/var/tmp
 
 # Check to see if we have a SSH key
 if [ ! -e /root/.ssh/id_rsa ]; then
