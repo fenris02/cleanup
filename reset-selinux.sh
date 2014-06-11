@@ -13,6 +13,10 @@ if [ "$(/usr/bin/whoami)" != "root" ]; then
   exit 1
 fi
 
+# Collect default selinux mode before beginning
+SELINUX=1
+[ -f /etc/selinux/config ] && . /etc/selinux/config
+
 [ -x /usr/sbin/setenforce ] || yum install -y libselinux-utils
 /usr/sbin/setenforce 0
 
@@ -21,7 +25,7 @@ fi
 
 /bin/mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
 /usr/bin/install -d -m 0755 -o root -g root /etc/selinux/targeted
-/usr/bin/yum reinstall -y \
+/usr/bin/yum reinstall -y --noplugins --enablerepo=updates-testing \
   libselinux{,-python,utils} \
   policycoreutils{,-newrole,-restorecond,-sandbox} \
   selinux-policy{,-targeted} \
@@ -33,6 +37,7 @@ fi
 echo "Resetting selinux labels for packaged files ... this may take some time."
 time /sbin/fixfiles -R -a restore
 
-/usr/sbin/setenforce 1
+/usr/sbin/setenforce $SELINUX
+echo "You should reboot now."
 
 #EOF
