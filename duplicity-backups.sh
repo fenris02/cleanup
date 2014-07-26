@@ -21,7 +21,7 @@ EXTRA_DUPLICITY="
 --full-if-older-than 7D \
 --log-file /var/log/duplicity.log \
 --verbosity notice \
---volsize 250 \
+--volsize 500 \
 "
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
@@ -43,7 +43,7 @@ if [ ! -e /root/.passphrase ]; then
   /bin/cat - <<EOT
 Create /root/.passphrase first.  Add any long phrase you can remember easily.
 
-Always keep your passphrase secret! 
+Always keep your passphrase secret!
 
 Even if your secret key is accessed by someone else, they will be unable to use
 it without your passphrase. Do not choose a passphrase that someone else might
@@ -54,6 +54,10 @@ passphrases are very long and contain a mixture of uppercase and lowercase
 letters, numbers, digits, and symbols. Choose a passphrase that you will be
 able to remember, however, since writing this passphrase down anywhere makes it
 immediately less secure.
+
+Once created:
+chown 0:0 /root/.passphrase; chmod 0400 /root/.passphrase;
+
 EOT
   exit 1
 fi
