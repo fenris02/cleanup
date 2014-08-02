@@ -14,6 +14,10 @@
 # Where to upload the backups
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 
+# Setup temporary directories
+export TMPDIR=$( /bin/mktemp -d /var/tmp/${0##*/}.XXXXXXXXXX ) || { echo "mktemp failed" >&2 ; exit 1 ; };
+export ROOT_TMPDIR=/root/gen-backups && [ -d "${ROOT_TMPDIR}" ] || mkdir -p "${ROOT_TMPDIR}"
+
 # Extra duplicity options
 EXTRA_DUPLICITY="
 --allow-source-mismatch \
@@ -24,9 +28,6 @@ EXTRA_DUPLICITY="
 --volsize 500 \
 "
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
-
-# Loading the day of the month in a variable.
-export TMPDIR=/var/tmp
 
 # Check to see if we have a SSH key
 if [ ! -e /root/.ssh/id_rsa ]; then
@@ -94,10 +95,9 @@ EOT
 fi
 
 # Generate some base OS configs
-[ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
-/usr/bin/show-installed -f kickstart -o ${TMPDIR}/SHOW-INSTALLED2.txt
-/usr/bin/yum repolist > ${TMPDIR}/YUM-REPOLIST.txt
-/usr/sbin/semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG.txt
+/usr/bin/show-installed -f kickstart -o ${ROOT_TMPDIR}/SHOW-INSTALLED2.txt
+/usr/bin/yum repolist > ${ROOT_TMPDIR}/YUM-REPOLIST.txt
+/usr/sbin/semanage -o ${ROOT_TMPDIR}/SELINUX-CUSTOM-CONFIG.txt
 
 # Directories to backup
 /bin/cat - > ${TMPDIR}/duplicity-backups.txt <<EOT
@@ -116,6 +116,7 @@ fi
 + /opt
 - /proc
 + /root
++ ${ROOT_TMPDIR}
 - /run
 - /sbin
 + /srv
@@ -142,6 +143,8 @@ date --rfc-3339=seconds >> /var/log/duplicity.log
 
 # Unsetting the confidential variables so they are gone for sure.
 unset PASSPHRASE
+/bin/rm $TMPDIR/duplicity-backups.txt
+/bin/rmdir $TMPDIR
 
 exit 0
 #EOF
