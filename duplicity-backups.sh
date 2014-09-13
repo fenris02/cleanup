@@ -124,6 +124,7 @@ fi
 - /usr
 + /usr/local
 - /var
++ /var/lib/docker
 + /var/lib/libvirt
 + /var/lib/lxc
 + /var/lib/znc
