@@ -39,7 +39,7 @@ SELINUX=1
 echo "Resetting selinux labels for packaged files ... this may take some time."
 time /sbin/fixfiles -R -a restore
 
-echo "Remember to review /etc/semanage.conf for settings like handle-unknown=deny"
+echo "Remember to review /etc/selinux/semanage.conf for settings like handle-unknown=deny"
 
 /usr/sbin/setenforce $SELINUX
 echo "You should reboot now."
