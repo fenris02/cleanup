@@ -5,7 +5,11 @@
 
 # This script is presently targetted to go into
 # /etc/network/ifup.d on debian derived systems
+# /sbin/ifup-local on rhel / centos / fedora derived systems
+#
+# References: http://www.bufferbloat.net/projects/codel/wiki/Best_practices_for_benchmarking_Codel_and_FQ_Codel
 
+IFACE=$1
 [[ "$IFACE" == "lo" ]] && exit 0
 
 LL=1 # go for lowest latency
@@ -18,8 +22,10 @@ FQ_LIMIT="" # the default 10000 packet limit mucks with slow start at speeds
             # at 1Gbit and below. Somewhat arbitrary figures selected.
 
 [ -z "$IFACE" ] && echo error: $0 expects IFACE parameter in environment && exit 1
-[ -z `which ethtool` ] && echo error: ethtool is required && exit 1
-[ -z `which tc` ] && echo error: tc is required && exit 1
+ethtool=/sbin/ethtool
+[ -z $ethtool ] && echo error: ethtool is required && exit 1
+tc=/sbin/tc
+[ -z $tc ] && echo error: tc is required && exit 1
 # FIXME see if $QDISC is available. modprobe?
 
 # BUGS - need to detect bridges.
@@ -44,12 +50,12 @@ FLOW_KEYS="src,dst,proto,proto-src,proto-dst"
 
 et() {
 (
-	ethtool -K $IFACE tso off
-	ethtool -K $IFACE gso off
-	ethtool -K $IFACE ufo off
+	$ethtool -K $IFACE tso off
+	$ethtool -K $IFACE gso off
+	$ethtool -K $IFACE ufo off
 # Presently unknown if gro/lro affect latency much
-	ethtool -K $IFACE gro off
-	ethtool -K $IFACE lro off
+	$ethtool -K $IFACE gro off
+	$ethtool -K $IFACE lro off
 ) 2> /dev/null
 }
 
@@ -57,11 +63,11 @@ et() {
 # to be voice, video, best effort and background
 
 wifi() {
-	tc qdisc add dev $IFACE handle 1 root mq
-	tc qdisc add dev $IFACE parent 1:1 $QDISC $FQ_OPTS noecn
-	tc qdisc add dev $IFACE parent 1:2 $QDISC $FQ_OPTS
-	tc qdisc add dev $IFACE parent 1:3 $QDISC $FQ_OPTS
-	tc qdisc add dev $IFACE parent 1:4 $QDISC $FQ_OPTS noecn
+	$tc qdisc add dev $IFACE handle 1 root mq
+	$tc qdisc add dev $IFACE parent 1:1 $QDISC $FQ_OPTS noecn
+	$tc qdisc add dev $IFACE parent 1:2 $QDISC $FQ_OPTS
+	$tc qdisc add dev $IFACE parent 1:3 $QDISC $FQ_OPTS
+	$tc qdisc add dev $IFACE parent 1:4 $QDISC $FQ_OPTS noecn
 }
 
 # Hardware mq ethernet devs are special and need some sort of filter
@@ -69,20 +75,20 @@ wifi() {
 
 mq() {
 	local I=1
-	tc qdisc add dev $IFACE handle 1 root mq
+	$tc qdisc add dev $IFACE handle 1 root mq
 
 	for i in $S/$IFACE/queues/tx-*
 	do
-		tc qdisc add dev $IFACE parent 1:$(printf "%x" $I) $QDISC $FQ_OPTS
+		$tc qdisc add dev $IFACE parent 1:$(printf "%x" $I) $QDISC $FQ_OPTS
 		I=`expr $I + 1`
 	done
 	I=`expr $I - 1`
-	tc filter add dev $IFACE prio 1 protocol ip parent 1: handle 100 \
+	$tc filter add dev $IFACE prio 1 protocol ip parent 1: handle 100 \
 		flow hash keys ${FLOW_KEYS} divisor $I baseclass 1:1
 }
 
 fq_codel() {
-	tc qdisc add dev $IFACE root $QDISC $FQ_OPTS $FQ_LIMIT
+	$tc qdisc add dev $IFACE root $QDISC $FQ_OPTS $FQ_LIMIT
 }
 
 fix_speed() {
@@ -121,8 +127,9 @@ fi
 }
 
 
-tc qdisc del dev $IFACE root 2> /dev/null
+$tc qdisc del dev $IFACE root 2> /dev/null
 fix_speed
 fix_queues
+/sbin/ip link set $IFACE txqueuelen 100
 
 exit 0
