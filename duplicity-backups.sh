@@ -117,6 +117,7 @@ fi
 - /proc
 + /root
 + ${ROOT_TMPDIR}
+- /root/.cache
 - /run
 - /sbin
 + /srv
@@ -131,7 +132,11 @@ fi
 + /var/www
 EOT
 
-date --rfc-3339=seconds >> /var/log/duplicity.log
+# Verify changes, verbosity=4 to see what files changed
+/usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist ${TMPDIR}/duplicity-backups.txt $BACKUP_URL / >> /var/log/duplicity.log
+
+# Run backup
+/bin/date --rfc-3339=seconds >> /var/log/duplicity.log
 /usr/bin/duplicity $EXTRA_DUPLICITY --no-encryption /root/.gnupg $BACKUP_URL/keys
 /usr/bin/duplicity $EXTRA_DUPLICITY --include-filelist ${TMPDIR}/duplicity-backups.txt / $BACKUP_URL
 
@@ -141,6 +146,18 @@ date --rfc-3339=seconds >> /var/log/duplicity.log
 # Deleting old backups
 /usr/bin/duplicity remove-older-than 1M --force $BACKUP_URL/keys
 /usr/bin/duplicity remove-older-than 1M --force $BACKUP_URL
+
+# Display the number of files in the backup set
+echo ""
+echo "Number of current files in backup:"
+/usr/bin/duplicity list-current-files $BACKUP_URL | /usr/bin/wc -l
+echo ""
+
+# Reminder on recovery
+echo "Use a command like this to recover files from 3 days ago:"
+echo "/usr/bin/duplicity -t 3D --file-to-restore some/file/from/backups $BACKUP_URL /recovery/point/file"
+echo ""
+echo "end report."
 
 # Unsetting the confidential variables so they are gone for sure.
 unset PASSPHRASE
