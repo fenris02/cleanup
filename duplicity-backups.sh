@@ -17,13 +17,14 @@ BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 # Setup temporary directories
 export TMPDIR=$( /bin/mktemp -d /var/tmp/${0##*/}.XXXXXXXXXX ) || { echo "mktemp failed" >&2 ; exit 1 ; };
 export ROOT_TMPDIR=/root/gen-backups && [ -d "${ROOT_TMPDIR}" ] || mkdir -p "${ROOT_TMPDIR}"
+export LOG_DUPLICITY=/var/log/duplicity.log
 
 # Extra duplicity options
 EXTRA_DUPLICITY="
 --allow-source-mismatch \
 --archive-dir /root/.cache/duplicity \
 --full-if-older-than 7D \
---log-file /var/log/duplicity.log \
+--log-file $LOG_DUPLICITY \
 --verbosity notice \
 --volsize 500 \
 "
@@ -132,11 +133,13 @@ fi
 + /var/www
 EOT
 
+# Datestamp the start
+/bin/date --rfc-3339=seconds >> $LOG_DUPLICITY
+
 # Verify changes, verbosity=4 to see what files changed
-/usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist ${TMPDIR}/duplicity-backups.txt $BACKUP_URL / >> /var/log/duplicity.log
+/usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist ${TMPDIR}/duplicity-backups.txt $BACKUP_URL / >> $LOG_DUPLICITY
 
 # Run backup
-/bin/date --rfc-3339=seconds >> /var/log/duplicity.log
 /usr/bin/duplicity $EXTRA_DUPLICITY --no-encryption /root/.gnupg $BACKUP_URL/keys
 /usr/bin/duplicity $EXTRA_DUPLICITY --include-filelist ${TMPDIR}/duplicity-backups.txt / $BACKUP_URL
 
