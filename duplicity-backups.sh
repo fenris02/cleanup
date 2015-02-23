@@ -61,6 +61,9 @@ Once created:
 chown 0:0 /root/.passphrase; chmod 0400 /root/.passphrase;
 
 EOT
+  echo $HOSTNAME > /root/.passphrase
+  chown 0:0 /root/.passphrase
+  chmod 0400 /root/.passphrase
   exit 1
 fi
 
@@ -69,6 +72,7 @@ export PASSPHRASE=$(/bin/cat /root/.passphrase |/usr/bin/sha512sum |/bin/awk '{p
 
 # Create gnupg keys if they do not already exist
 if [ ! -e /root/.gnupg ]; then
+  [ -d /root/tmp ] || install -d -m 0700 -o 0 -g 0 /root/tmp
   echo "Create a GNUPG keychain first"
   /bin/cat -> /root/tmp/gnupg-batch.txt <<EOT
      %echo Generating a standard key
@@ -136,6 +140,11 @@ EOT
 # Datestamp the start
 /bin/date --rfc-3339=seconds >> $LOG_DUPLICITY
 
+if [ \! -x /usr/bin/duplicity ]; then
+  [ -f /etc/redhat-release ] && /usr/bin/yum install -y epel-release
+  /usr/bin/yum install -y duplicity
+fi
+
 # Verify changes, verbosity=4 to see what files changed
 /usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist ${TMPDIR}/duplicity-backups.txt $BACKUP_URL / >> $LOG_DUPLICITY
 
@@ -158,6 +167,7 @@ echo ""
 
 # Reminder on recovery
 echo "Use a command like this to recover files from 3 days ago:"
+echo "/usr/bin/duplicity --no-encryption /root/.gnupg $BACKUP_URL/keys /safe/recovery/point"
 echo "/usr/bin/duplicity -t 3D --file-to-restore some/file/from/backups $BACKUP_URL /recovery/point/file"
 echo ""
 echo "end report."
