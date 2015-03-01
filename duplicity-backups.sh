@@ -70,6 +70,15 @@ fi
 # Setting the pass phrase to encrypt the backup files.
 export PASSPHRASE=$(/bin/cat /root/.passphrase |/usr/bin/sha512sum |/bin/awk '{print$1}')
 
+if [ \! -x /usr/bin/gpg ]; then
+  /usr/bin/yum install -y gnupg2
+fi
+if [ \! -x /sbin/rngd ]; then
+  /usr/bin/yum install -y rng-tools
+  /sbin/chkconfig rngd on
+  /sbin/service rngd start
+fi
+
 # Create gnupg keys if they do not already exist
 if [ ! -e /root/.gnupg ]; then
   [ -d /root/tmp ] || install -d -m 0700 -o 0 -g 0 /root/tmp
