@@ -139,6 +139,7 @@ fi
 - /usr
 + /usr/local
 - /var
++ /var/cfengine
 + /var/lib/docker
 + /var/lib/libvirt
 + /var/lib/lxc
