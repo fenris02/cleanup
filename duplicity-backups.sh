@@ -15,9 +15,13 @@
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 
 # Setup temporary directories
-export TMPDIR=$( /bin/mktemp -d /var/tmp/${0##*/}.XXXXXXXXXX ) || { echo "mktemp failed" >&2 ; exit 1 ; };
-export ROOT_TMPDIR=/root/gen-backups && [ -d "${ROOT_TMPDIR}" ] || mkdir -p "${ROOT_TMPDIR}"
+export TMPDIR=$( /bin/mktemp -d "/var/tmp/${0##*/}.XXXXXXXXXX" ) || \
+  { echo "mktemp failed" >&2 ; exit 1 ; };
+export ROOT_TMPDIR=/root/gen-backups
 export LOG_DUPLICITY=/var/log/duplicity.log
+
+# Ensure temporary location exists
+[ -d "${ROOT_TMPDIR}" ] || mkdir -p "${ROOT_TMPDIR}"
 
 # Extra duplicity options
 EXTRA_DUPLICITY="
@@ -61,14 +65,16 @@ Once created:
 chown 0:0 /root/.passphrase; chmod 0400 /root/.passphrase;
 
 EOT
-  echo $HOSTNAME > /root/.passphrase
+  if [ $(/usr/bin/stat -c %a /) -ne 555 ]; then chmod 0555 /; fi
+  if [ $(/usr/bin/stat -c %a /root) -ne 700 ]; then chmod 0700 /root; fi
+  echo "$HOSTNAME" > /root/.passphrase
   chown 0:0 /root/.passphrase
   chmod 0400 /root/.passphrase
   exit 1
 fi
 
 # Setting the pass phrase to encrypt the backup files.
-export PASSPHRASE=$(/bin/cat /root/.passphrase |/usr/bin/sha512sum |/bin/awk '{print$1}')
+export PASSPHRASE=$(/usr/bin/sha512sum < /root/.passphrase |/bin/awk '{print$1}')
 
 if [ \! -x /usr/bin/gpg ]; then
   /usr/bin/yum install -y gnupg2
@@ -101,20 +107,21 @@ if [ ! -e /root/.gnupg ]; then
      %echo done
 EOT
   /usr/bin/gpg --gen-key --batch /root/tmp/gnupg-batch.txt
-  /usr/bin/gpg --export-secret-keys --armor root@$HOSTNAME > /root/.gnupg/root-privkey.asc
+  /usr/bin/gpg --export-secret-keys --armor "root@$HOSTNAME" > \
+    /root/.gnupg/root-privkey.asc
   /bin/chmod 0400 /root/.gnupg/root-privkey.asc
-  /usr/bin/gpg --export --armor root@$HOSTNAME > /root/.gnupg/root-pubkey.asc
+  /usr/bin/gpg --export --armor "root@$HOSTNAME" > /root/.gnupg/root-pubkey.asc
   /bin/rm /root/tmp/gnupg-batch.txt
   exit 1
 fi
 
 # Generate some base OS configs
-/usr/bin/show-installed -f kickstart -o ${ROOT_TMPDIR}/SHOW-INSTALLED2.txt
-/usr/bin/yum repolist > ${ROOT_TMPDIR}/YUM-REPOLIST.txt
-/usr/sbin/semanage -o ${ROOT_TMPDIR}/SELINUX-CUSTOM-CONFIG.txt
+/usr/bin/show-installed -f kickstart -o "${ROOT_TMPDIR}/SHOW-INSTALLED2.txt"
+/usr/bin/yum repolist > "${ROOT_TMPDIR}/YUM-REPOLIST.txt"
+/usr/sbin/semanage -o "${ROOT_TMPDIR}/SELINUX-CUSTOM-CONFIG.txt"
 
 # Directories to backup
-/bin/cat - > ${TMPDIR}/duplicity-backups.txt <<EOT
+/bin/cat - > "${TMPDIR}/duplicity-backups.txt" <<EOT
 + /
 - /bin
 - /boot
@@ -148,7 +155,7 @@ fi
 EOT
 
 # Datestamp the start
-/bin/date --rfc-3339=seconds >> $LOG_DUPLICITY
+/bin/date --rfc-3339=seconds >> "$LOG_DUPLICITY"
 
 if [ \! -x /usr/bin/duplicity ]; then
   [ -f /etc/redhat-release ] && /usr/bin/yum install -y epel-release
@@ -156,36 +163,42 @@ if [ \! -x /usr/bin/duplicity ]; then
 fi
 
 # Verify changes, verbosity=4 to see what files changed
-/usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist ${TMPDIR}/duplicity-backups.txt $BACKUP_URL / >> $LOG_DUPLICITY
+/usr/bin/duplicity verify $EXTRA_DUPLICITY -v4 --include-filelist \
+  "${TMPDIR}/duplicity-backups.txt" "$BACKUP_URL" / >> "$LOG_DUPLICITY"
 
 # Run backup
-/usr/bin/duplicity $EXTRA_DUPLICITY --no-encryption /root/.gnupg $BACKUP_URL/keys
-/usr/bin/duplicity $EXTRA_DUPLICITY --include-filelist ${TMPDIR}/duplicity-backups.txt / $BACKUP_URL
+/usr/bin/duplicity $EXTRA_DUPLICITY --no-encryption /root/.gnupg \
+  "$BACKUP_URL/keys"
+/usr/bin/duplicity $EXTRA_DUPLICITY --include-filelist \
+  "${TMPDIR}/duplicity-backups.txt" / "$BACKUP_URL"
 
 # Check http://www.nongnu.org/duplicity/duplicity.1.html for all the options
 # available for Duplicity.
 
 # Deleting old backups
-/usr/bin/duplicity remove-older-than 1M --force $BACKUP_URL/keys
-/usr/bin/duplicity remove-older-than 1M --force $BACKUP_URL
+/usr/bin/duplicity remove-older-than 1M --force "$BACKUP_URL/keys"
+/usr/bin/duplicity remove-older-than 1M --force "$BACKUP_URL"
 
 # Display the number of files in the backup set
 echo ""
 echo "Number of current files in backup:"
-/usr/bin/duplicity list-current-files $BACKUP_URL | /usr/bin/wc -l
+/usr/bin/duplicity list-current-files "$BACKUP_URL" | /usr/bin/wc -l
 echo ""
 
 # Reminder on recovery
-echo "Use a command like this to recover files from 3 days ago:"
-echo "/usr/bin/duplicity --no-encryption /root/.gnupg $BACKUP_URL/keys /safe/recovery/point"
-echo "/usr/bin/duplicity -t 3D --file-to-restore some/file/from/backups $BACKUP_URL /recovery/point/file"
-echo ""
-echo "end report."
+echo "
+  Use a command like this to recover files from 3 days ago:
+
+  /usr/bin/duplicity --no-encryption /root/.gnupg $BACKUP_URL/keys /safe/recovery/point;
+  /usr/bin/duplicity -t 3D --file-to-restore some/file/from/backups $BACKUP_URL /recovery/point/file;
+
+  end report.
+"
 
 # Unsetting the confidential variables so they are gone for sure.
 unset PASSPHRASE
-/bin/rm $TMPDIR/duplicity-backups.txt
-/bin/rmdir $TMPDIR
+/bin/rm "$TMPDIR/duplicity-backups.txt"
+/bin/rmdir "$TMPDIR"
 
 exit 0
 #EOF
