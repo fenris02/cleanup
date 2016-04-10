@@ -45,13 +45,13 @@ fi
 if [ ! -e /root/.ssh/id_rsa ] && [ ! -e /root/.ssh/id_ed25519 ]; then
   /bin/cat - <<EOT
 Create an SSH key first.  Two example methods:
-  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_ed25519
+  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
   /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
 
-  /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_rsa
+  /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
   /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $BACKUP_URL
 EOT
-  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_ed25519
+  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
   exit 1
 fi
 
