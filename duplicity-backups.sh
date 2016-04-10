@@ -36,7 +36,7 @@ EXTRA_DUPLICITY="
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
 # Check to see if we have a SSH key
-if [ ! -e /root/.ssh/id_rsa ] || [ ! -e /root/.ssh/id_ed25519 ]; then
+if [ ! -e /root/.ssh/id_rsa ] && [ ! -e /root/.ssh/id_ed25519 ]; then
   /bin/cat - <<EOT
 Create an SSH key first.  An example method:
   /usr/bin/ssh-keygen -t ed25519 -N ''
