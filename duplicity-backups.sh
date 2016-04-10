@@ -35,16 +35,23 @@ EXTRA_DUPLICITY="
 "
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
+if [ \! -x /sbin/rngd ]; then
+  /usr/bin/yum install -y rng-tools
+  /sbin/chkconfig rngd on
+  /sbin/service rngd start
+fi
+
 # Check to see if we have a SSH key
 if [ ! -e /root/.ssh/id_rsa ] && [ ! -e /root/.ssh/id_ed25519 ]; then
   /bin/cat - <<EOT
-Create an SSH key first.  An example method:
-  /usr/bin/ssh-keygen -t ed25519 -N ''
+Create an SSH key first.  Two example methods:
+  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_ed25519
   /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
 
-  /usr/bin/ssh-keygen -t ed25519 -b 4096 -N ''
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
+  /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_rsa
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $BACKUP_URL
 EOT
+  /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f $HOME/.ssh/id_ed25519
   exit 1
 fi
 
@@ -83,11 +90,6 @@ export PASSPHRASE
 
 if [ \! -x /usr/bin/gpg ]; then
   /usr/bin/yum install -y gnupg2
-fi
-if [ \! -x /sbin/rngd ]; then
-  /usr/bin/yum install -y rng-tools
-  /sbin/chkconfig rngd on
-  /sbin/service rngd start
 fi
 
 # Create gnupg keys if they do not already exist
