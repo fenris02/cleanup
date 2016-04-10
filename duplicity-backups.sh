@@ -15,10 +15,11 @@
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
 
 # Setup temporary directories
-export TMPDIR=$( /bin/mktemp -d "/var/tmp/${0##*/}.XXXXXXXXXX" ) || \
+TMPDIR=$( /bin/mktemp -d "/var/tmp/${0##*/}.XXXXXXXXXX" ) || \
   { echo "mktemp failed" >&2 ; exit 1 ; };
-export ROOT_TMPDIR=/root/gen-backups
-export LOG_DUPLICITY=/var/log/duplicity.log
+ROOT_TMPDIR=/root/gen-backups
+LOG_DUPLICITY=/var/log/duplicity.log
+export TMPDIR ROOT_TMPDIR LOG_DUPLICITY
 
 # Ensure temporary location exists
 [ -d "${ROOT_TMPDIR}" ] || mkdir -p "${ROOT_TMPDIR}"
@@ -35,11 +36,14 @@ EXTRA_DUPLICITY="
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
 # Check to see if we have a SSH key
-if [ ! -e /root/.ssh/id_rsa ]; then
+if [ ! -e /root/.ssh/id_rsa ] || [ ! -e /root/.ssh/id_ed25519 ]; then
   /bin/cat - <<EOT
 Create an SSH key first.  An example method:
-  /usr/bin/ssh-keygen -t rsa -N ''
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa.pub user@backup.host.name
+  /usr/bin/ssh-keygen -t ed25519 -N ''
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
+
+  /usr/bin/ssh-keygen -t ed25519 -b 4096 -N ''
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
 EOT
   exit 1
 fi
@@ -65,8 +69,8 @@ Once created:
 chown 0:0 /root/.passphrase; chmod 0400 /root/.passphrase;
 
 EOT
-  if [ $(/usr/bin/stat -c %a /) -ne 555 ]; then chmod 0555 /; fi
-  if [ $(/usr/bin/stat -c %a /root) -ne 700 ]; then chmod 0700 /root; fi
+  if [ "$(/usr/bin/stat -c %a /)" -ne 555 ]; then chmod 0555 /; fi
+  if [ "$(/usr/bin/stat -c %a /root)" -ne 700 ]; then chmod 0700 /root; fi
   echo "$HOSTNAME" > /root/.passphrase
   chown 0:0 /root/.passphrase
   chmod 0400 /root/.passphrase
@@ -74,7 +78,8 @@ EOT
 fi
 
 # Setting the pass phrase to encrypt the backup files.
-export PASSPHRASE=$(/usr/bin/sha512sum < /root/.passphrase |/bin/awk '{print$1}')
+PASSPHRASE="$(/usr/bin/sha512sum < /root/.passphrase |/bin/awk '{print$1}')"
+export PASSPHRASE
 
 if [ \! -x /usr/bin/gpg ]; then
   /usr/bin/yum install -y gnupg2
