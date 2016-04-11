@@ -6,7 +6,7 @@
 
 DS=$(/bin/date +%Y%m%d)
 LANG=C
-TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
+TMPDIR=$(/bin/mktemp -d "${TMPDIR:-/tmp}/${0##*/}-XXXXX.log")
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 if [ "$(/usr/bin/whoami)" != "root" ]; then
@@ -22,9 +22,9 @@ SELINUX=1
 /usr/sbin/setenforce 0
 
 [ -x /usr/sbin/semanage ] || yum install -y policycoreutils-python
-/usr/sbin/semanage -o ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+/usr/sbin/semanage -o "${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt"
 
-/bin/mv /etc/selinux/targeted ${TMPDIR}/targeted.${DS}
+/bin/mv /etc/selinux/targeted "${TMPDIR}/targeted.${DS}"
 /usr/bin/install -d -m 0755 -o root -g root /etc/selinux/targeted
 /usr/bin/yum reinstall -y --noplugins --enablerepo=updates-testing \
   libselinux{,-python,utils} \
@@ -32,7 +32,7 @@ SELINUX=1
   selinux-policy{,-targeted} \
   #
 
-/usr/sbin/semanage -i ${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt
+/usr/sbin/semanage -i "${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt"
 
 /usr/sbin/semodule -B
 
@@ -42,7 +42,7 @@ time /sbin/fixfiles -R -a restore
 
 echo "Remember to review /etc/selinux/semanage.conf for settings like handle-unknown=deny"
 
-/usr/sbin/setenforce $SELINUX
+/usr/sbin/setenforce "$SELINUX"
 echo "You should reboot now."
 
 #EOF
