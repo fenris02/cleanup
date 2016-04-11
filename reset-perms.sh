@@ -4,9 +4,9 @@
 # Mirrored on https://fedoraproject.org/wiki/User:Fenris02/Distribution_upgrades_and_cleaning_up_after_them
 
 VERBOSE=1
-DS=$(/bin/date +%Y%m%d)
+#DS=$(/bin/date +%Y%m%d)
 LANG=C
-TMPDIR=$(/bin/mktemp -d ${TMPDIR:-/tmp}/${0##*/}-XXXXX.log)
+TMPDIR=$(/bin/mktemp -d "${TMPDIR:-/tmp}/${0##*/}-XXXXX.log")
 [ -d "${TMPDIR}" ] || mkdir -p "${TMPDIR}"
 
 if [ "$(/usr/bin/whoami)" != "root" ]; then
@@ -23,11 +23,11 @@ time rpm -a --setugids > /dev/null 2>&1
 time rpm -a --setperms > /dev/null 2>&1
 
 [ -n "$VERBOSE" ] && echo 'This may take a few minutes, resetting file capabilities'
-time rpm -Va > ${TMPDIR}/rpm-Va0.txt 2>&1;
-awk '/^.{8}P /{print$NF}' ${TMPDIR}/rpm-Va0.txt \
+time rpm -Va > "${TMPDIR}/rpm-Va0.txt" 2>&1;
+awk '/^.{8}P /{print$NF}' "${TMPDIR}/rpm-Va0.txt" \
   |xargs rpm --filecaps -qf \
   |grep '= cap' \
-  |while read fileName eq fileCaps; do
+  |while read -r fileName eq fileCaps; do
     setcap "${fileCaps}" "${fileName}"
   done
 
