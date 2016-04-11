@@ -56,7 +56,7 @@ echo "Requesting extra reporting tools to be installed ..."
 
 if [ -x /usr/sbin/semanage ]; then
   echo "Reporting SELinux policy ..."
-  TMPF="$(/bin/mktemp -u /tmp/${0##*/}-XXXXX.txt)"
+  TMPF=$(/bin/mktemp -u "/tmp/${0##*/}-XXXXX.txt")
   /usr/sbin/semanage -o "$TMPF"
   /bin/mv "$TMPF" "${TMPDIR}/SELINUX-CUSTOM-CONFIG_${DS}.txt"
 fi
@@ -70,7 +70,7 @@ echo "Finding installed packages ..."
 if [ -x /usr/bin/show-installed ]; then
   /usr/bin/show-installed -f kickstart -e -o "${TMPDIR}/SHOW-INSTALLED2_${DS}.txt"
 else
-  "$(dirname $0)/show-installed" -f kickstart -e -o "${TMPDIR}/SHOW-INSTALLED2_${DS}.txt"
+  $(dirname "$0")/show-installed -f kickstart -e -o "${TMPDIR}/SHOW-INSTALLED2_${DS}.txt"
 fi
 /bin/sort -o "${TMPDIR}/SHOW-INSTALLED2_${DS}.txt" "${TMPDIR}/SHOW-INSTALLED2_${DS}.txt"
 
