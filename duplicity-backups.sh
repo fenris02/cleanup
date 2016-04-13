@@ -35,7 +35,7 @@ EXTRA_DUPLICITY="
 "
 # Additional TMP space needed, but may make it faster: --asynchronous-upload \
 
-if [ \! -x /sbin/rngd ]; then
+if [ ! -x /sbin/rngd ]; then
   /usr/bin/yum install -y rng-tools
   /sbin/chkconfig rngd on
   /sbin/service rngd start
@@ -88,7 +88,7 @@ fi
 PASSPHRASE="$(/usr/bin/sha512sum < /root/.passphrase |/bin/awk '{print$1}')"
 export PASSPHRASE
 
-if [ \! -x /usr/bin/gpg ]; then
+if [ ! -x /usr/bin/gpg ]; then
   /usr/bin/yum install -y gnupg2
 fi
 
@@ -164,7 +164,7 @@ EOT
 # Datestamp the start
 /bin/date --rfc-3339=seconds >> "$LOG_DUPLICITY"
 
-if [ \! -x /usr/bin/duplicity ]; then
+if [ ! -x /usr/bin/duplicity ]; then
   [ -f /etc/redhat-release ] && /usr/bin/yum install -y epel-release
   /usr/bin/yum install -y duplicity
 fi

@@ -35,7 +35,7 @@ echo "Generating reports ..."
 /bin/egrep '^.{9}  c /' "${TMPDIR}/RPM-VA2_${DS}.txt" > "${TMPDIR}/REVIEW-CONFIGS_${DS}.txt"
 /bin/find /etc -name '*.rpm?*' > "${TMPDIR}/REVIEW-OBSOLETE-CONFIGS_${DS}.txt"
 
-if [ \! -f /var/lib/yum/groups/installed ]; then
+if [ ! -f /var/lib/yum/groups/installed ]; then
   # "group mark convert" converts the automatic data you get without using groups
   # as objects into groups as objects data. This makes it much easier to convert
   # to groups as objects without having to reinstall.
