@@ -13,7 +13,7 @@
 #
 
 # Setup environment
-DC="$(/bin/date +%Y%m%dT%H%M)"
+DC="$( /bin/date +%Y%m%dT%H%M )"
 SELF="${0##*/}"
 TMPDIR="$( /bin/mktemp -d "/var/tmp/${SELF}.XXXXXXXXXX" )" || { echo "mktemp failed" >&2 ; exit 1 ; };
 lockfile="${TMPDIR}/${SELF}.lockfile"
@@ -30,8 +30,8 @@ MYSQLPARAMS="-h localhost --my-config=${MYSQLCNF}"
 cd "${BK_DIR}" || exit 1
 
 # locate the dbms directory
-DATADIR="$( /bin/mysqladmin "${MYSQLPARAMS}" variables |/bin/awk '/datadir/{print$4}' )"
-BLOCKDEV="$( /bin/df --no-sync "${DATADIR}" |/bin/awk 'END{print$1}' )"
+DATADIR="$( /bin/mysqladmin "${MYSQLPARAMS}" variables | /bin/awk '/datadir/{print$4}' )"
+BLOCKDEV="$( /bin/df --no-sync "${DATADIR}" | /bin/awk 'END{print$1}' )"
 LVM="${BLOCKDEV##*/}"
 VG="${LVM%-*}"
 LV="${LVM#*-}"
@@ -43,7 +43,7 @@ clean_house () {
 }
 
 # Ensure a clean exit
-if ( set -o noclobber; echo "$$" > "${lockfile}") 2> /dev/null; then
+if ( set -o noclobber; echo "$$" > "${lockfile}" ) 2> /dev/null; then
   trap clean_house INT TERM EXIT
 
   # Create credentials file
