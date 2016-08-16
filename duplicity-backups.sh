@@ -133,32 +133,21 @@ fi
 - /bin
 - /boot
 - /dev
-+ /etc
-+ /home
 - /home/lost+found
 - /lib
 - /lib64
 - /lost+found
 - /media
 - /mnt
-+ /opt
 - /proc
-+ /root
-+ ${ROOT_TMPDIR}
 - /root/.cache
 - /run
 - /sbin
-+ /srv
 - /sys
 - /usr
-+ /usr/local
-- /var
-+ /var/cfengine
-+ /var/lib/docker
-+ /var/lib/libvirt
-+ /var/lib/lxc
-+ /var/lib/znc
-+ /var/www
+- /var/cache
+- /var/log
+- /var/spool
 EOT
 
 # Datestamp the start
