@@ -129,25 +129,42 @@ fi
 
 # Directories to backup
 /bin/cat - > "${TMPDIR}/duplicity-backups.txt" <<EOT
-+ /
 - /bin
 - /boot
 - /dev
-- /home/lost+found
+- /home/*/.cache
+- /home/*/.local/share/Trash
+- /home/*/.thumnails
 - /lib
 - /lib64
 - /lost+found
+- **/lost+found
 - /media
 - /mnt
 - /proc
 - /root/.cache
+- /root/.local/share/Trash
+- /root/.thumnails
 - /run
 - /sbin
 - /sys
+- /tmp
 - /usr
 - /var/cache
+- /var/lock
 - /var/log
+- /var/run
 - /var/spool
+- /var/tmp
++ /boot
++ /etc
++ /home
++ /opt
++ /root
++ /srv
++ /usr/local
++ /var
+- **
 EOT
 
 # Datestamp the start
