@@ -13,7 +13,9 @@
 # User settings:
 # Where to upload the backups
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
-SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
+# This is an example of how to set SSH options. These are common, but not recommended.
+SSH_OPTIONS="-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no"
 
 # Setup temporary directories
 TMPDIR=$( /bin/mktemp -d "/var/tmp/${0##*/}.XXXXXXXXXX" ) || \
