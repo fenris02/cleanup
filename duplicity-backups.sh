@@ -33,7 +33,7 @@ EXTRA_DUPLICITY="
 --archive-dir /root/.cache/duplicity \
 --full-if-older-than 7D \
 --log-file $LOG_DUPLICITY \
---ssh-options "$SSH_OPTIONS" \
+--ssh-options \"$SSH_OPTIONS\" \
 --verbosity notice \
 --volsize 500 \
 "
