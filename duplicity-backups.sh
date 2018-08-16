@@ -45,13 +45,14 @@ fi
 
 # Check to see if we have a SSH key
 if [ ! -e /root/.ssh/id_rsa ] && [ ! -e /root/.ssh/id_ed25519 ]; then
+  IFS='/' arr=($BACKUP_URL)
   /bin/cat - <<EOT
 Create an SSH key first.  Two example methods:
   /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $SSH_OPTIONS $BACKUP_URL
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $SSH_OPTIONS ${arr[2]}
 
   /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $SSH_OPTIONS $BACKUP_URL
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $SSH_OPTIONS ${arr[2]}
 EOT
   /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
   exit 1
