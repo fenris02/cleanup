@@ -13,6 +13,7 @@
 # User settings:
 # Where to upload the backups
 BACKUP_URL="sftp://User@BackupHost.local.lan//home/duplicity/$HOSTNAME/"
+SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 # Setup temporary directories
 TMPDIR=$( /bin/mktemp -d "/var/tmp/${0##*/}.XXXXXXXXXX" ) || \
@@ -30,6 +31,7 @@ EXTRA_DUPLICITY="
 --archive-dir /root/.cache/duplicity \
 --full-if-older-than 7D \
 --log-file $LOG_DUPLICITY \
+--ssh-options "$SSH_OPTIONS" \
 --verbosity notice \
 --volsize 500 \
 "
@@ -46,10 +48,10 @@ if [ ! -e /root/.ssh/id_rsa ] && [ ! -e /root/.ssh/id_ed25519 ]; then
   /bin/cat - <<EOT
 Create an SSH key first.  Two example methods:
   /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $BACKUP_URL
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_ed25519 $SSH_OPTIONS $BACKUP_URL
 
   /usr/bin/ssh-keygen -t rsa -b 4096 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
-  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $BACKUP_URL
+  /usr/bin/ssh-copy-id -i ~/.ssh/id_rsa $SSH_OPTIONS $BACKUP_URL
 EOT
   /usr/bin/ssh-keygen -t ed25519 -N '' -C "$USER@$HOSTNAME" -f "$HOME/.ssh/id_ed25519"
   exit 1
